@@ -1,0 +1,43 @@
+networks:
+  citus_network:
+    driver: bridge
+
+services:
+  coordinateur:
+    image: citusdata/citus:12.1.3
+    container_name: citus_coordinateur
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: flowshop_db
+      POSTGRES_HOST_AUTH_METHOD: trust
+    networks:
+      - citus_network
+
+  worker1:
+    image: citusdata/citus:12.1.3
+    container_name: citus_worker1
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: flowshop_db
+      POSTGRES_HOST_AUTH_METHOD: trust
+    networks:
+      - citus_network
+
+  worker2:
+    image: citusdata/citus:12.1.3
+    container_name: citus_worker2
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: flowshop_db
+      POSTGRES_HOST_AUTH_METHOD: trust
+    networks:
+      - citus_network
