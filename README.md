@@ -128,15 +128,15 @@ services:
       - citus_network
 ```
 
-> **`POSTGRES_HOST_AUTH_METHOD: trust`** autorise les connexions entre nœuds sans mot de passe sur le réseau Docker interne. Sans cette option, le coordinateur ne peut pas interroger les workers et toute requête distribuée échoue avec `fe_sendauth: no password supplied`. Cette configuration est acceptable dans un réseau Docker isolé ; en production, on utiliserait `scram-sha-256` avec un fichier `.pgpass`.
+> **`POSTGRES_HOST_AUTH_METHOD: trust`** autorise les connexions entre nœuds sans mot de passe sur le réseau Docker interne. Sans cette option, le coordinateur ne peut pas interroger les workers et toute requête distribuée échoue avec `fe_sendauth: no password supplied`. 
 
 ---
 
 ## Étape 2 — Démarrer le cluster progressivement
 
-On démarre les conteneurs un par un pour bien comprendre chaque rôle avant d'ajouter le suivant.
+On démarre les conteneurs un par un pour observé leur comportement.
 
-### a. Démarrer uniquement le coordinateur
+### a. Démarrage du coordinateur
 
 ```bash
 sudo docker-compose up -d coordinateur
@@ -151,27 +151,35 @@ SELECT citus_version();
 Vous devez voir le numéro de version de Citus. Quittez avec `\q`.
 
 ### b. Ajouter le premier worker
+Dans un autre terminal, demarrez le worker1 et verifiez son existence.
 
 ```bash
 sudo docker-compose up -d worker1
 sudo docker ps
-sudo docker exec -it citus_coordinateur psql -U postgres -d flowshop_db
 ```
+
+Sur le container du coordinateur, déclarer le worker que vous venez de créér.
 
 ```sql
 SELECT citus_add_node('citus_worker1', 5432);
+```
+
+Listez znsuitz les workers actifs
+
+```sql
 SELECT * FROM citus_get_active_worker_nodes();
 ```
 
-Vous devez voir une ligne avec `citus_worker1`. Quittez avec `\q`.
+Vous devez voir une ligne avec `citus_worker1`.
 
 ### c. Ajouter le second worker
 
 ```bash
 sudo docker-compose up -d worker2
 sudo docker ps
-sudo docker exec -it citus_coordinateur psql -U postgres -d flowshop_db
 ```
+
+Déclarez le worker2 et listez à nouvveau les workers actifs.
 
 ```sql
 SELECT citus_add_node('citus_worker2', 5432);
@@ -186,6 +194,7 @@ Vous devez voir deux lignes : `citus_worker1` et `citus_worker2`. Le cluster est
 
 On crée les tables une par une sur le coordinateur. Citus les propage automatiquement sur les workers au moment de la distribution.
 
+Connectez-vous au coordinateur si ce n'est pas déjà fait
 ```bash
 sudo docker exec -it citus_coordinateur psql -U postgres -d flowshop_db
 ```
@@ -228,7 +237,7 @@ CREATE TABLE commandes(
 
 ### d. Table details_commande
 
-`details_commande` sera distribuée sur `client_id` pour être colocalisée avec `clients` et `commandes`. On ajoute donc `client_id` comme colonne de distribution — elle sera renseignée lors de la génération des données.
+`details_commande` sera distribuée sur `client_id` pour être colocalisée avec `clients` et `commandes`. On ajoute donc `client_id` comme colonne de distribution.
 
 ```sql
 CREATE TABLE details_commande(
@@ -306,20 +315,21 @@ Résultat attendu :
 
 ### a. Copier les fichiers CSV dans le conteneur
 
-Depuis un terminal sur votre machine (pas dans psql) :
+Depuis un autre terminal sur votre machine :
 
 ```bash
 sudo docker cp /tmp/produits.csv          citus_coordinateur:/tmp/
+
 sudo docker cp /tmp/clients.csv           citus_coordinateur:/tmp/
+
 sudo docker cp /tmp/commandes.csv         citus_coordinateur:/tmp/
+
 sudo docker cp /tmp/details_commande.csv  citus_coordinateur:/tmp/
 ```
 
 ### b. Charger les données
 
-```bash
-sudo docker exec -it citus_coordinateur psql -U postgres -d flowshop_db
-```
+Sur le noeud du coordinateur, executez les commandes suivantes pour charger les données.
 
 ```sql
 COPY produits(produit_id, nom_produit, categorie, prix)
@@ -335,7 +345,6 @@ COPY details_commande(detail_id, commande_id, client_id, produit_id, quantite, p
 FROM '/tmp/details_commande.csv' DELIMITER ',' CSV HEADER;
 ```
 
-> La colonne `client_id` est maintenant présente dans `details_commande.csv`. Elle a été ajoutée lors de la génération des données pour permettre la colocalisation.
 
 ### c. Vérifier le chargement
 
@@ -380,11 +389,9 @@ Cette étape illustre concrètement pourquoi le choix de la clé de distribution
 
 ### a. Version sans colocalisation (référence)
 
-Cette version correspond à une configuration où `details_commande` aurait été distribuée sur `commande_id` — une clé différente de `commandes` (distribuée sur `client_id`). Pour reproduire ce comportement, on active le repartitioning forcé :
+Cette requete correspond à une configuration où `details_commande` aurait été distribuée sur `commande_id` — une clé différente de `commandes` (distribuée sur `client_id`).
 
 ```sql
-SET citus.enable_repartition_joins = on;
-
 EXPLAIN ANALYZE
 SELECT
     cl.pays,
@@ -395,22 +402,11 @@ JOIN details_commande d ON c.commande_id = d.commande_id
 GROUP BY cl.pays
 ORDER BY chiffre_affaires DESC;
 ```
-
-Plan obtenu (résultats indicatifs) :
-
+Si vous rencontrez une allerte vous demandant d'activer le repartitioning forcé, faites le en tapant :
+```sql
+SET citus.enable_repartition_joins = on;
 ```
-Sort  (actual time=35347..35347 rows=5)
-  → HashAggregate
-      → Custom Scan (Citus Adaptive)
-            Task Count: 8
-            → MapMergeJob
-                 Map Task Count: 32 / Merge Task Count: 8
-            → MapMergeJob
-                 Map Task Count: 32 / Merge Task Count: 8
-Execution Time: ~35 000 ms
-```
-
-**Ce que cela signifie :** `Task Count: 8` avec deux `MapMergeJob` indique que Citus a dû redistribuer physiquement les données entre workers deux fois (une fois par jointure non colocalisée). Chaque redistribution génère du trafic réseau inter-workers — même sur un réseau Docker local, ce shuffle est coûteux.
+puis reesayez l'EXPLAIN ANALYSE
 
 ### b. Version avec colocalisation complète
 
@@ -429,62 +425,10 @@ GROUP BY cl.pays
 ORDER BY chiffre_affaires DESC;
 ```
 
-Plan obtenu :
+> La colocalisation dans Citus repose sur deux conditions cumulatives :
 
-```
-Sort  (actual time=3049..3049 rows=5)
-  → HashAggregate
-      → Custom Scan (Citus Adaptive)
-            Task Count: 32
-            Tasks Shown: One of 32
-            → Task
-                 Node: host=citus_worker2
-                 → Hash Join
-                      Hash Cond: (d.client_id = c.client_id) AND (d.commande_id = c.commande_id)
-                      → Seq Scan on commandes_102052
-                      → Seq Scan on details_commande_102116
-Execution Time: ~3 050 ms
-```
+> **Condition structurelle :** les tables doivent être distribuées sur la même colonne sémantique (`client_id`), ce qui leur attribue le même `colocationid` dans `pg_dist_partition`.
 
-**Ce que cela signifie :** `Task Count: 32` sans aucun `MapMergeJob`. Citus a créé 32 tâches indépendantes — une par shard — chacune exécutée localement sur son worker. Les `Seq Scan` portent sur des shards du même worker (`commandes_102052` et `details_commande_102116`). Le coordinateur ne reçoit que les agrégats partiels (57 bytes au total).
-
-### c. Tableau comparatif
-
-| | Sans colocalisation | Avec colocalisation |
-|---|---|---|
-| **Temps d'exécution** | ~35 000 ms | **~3 050 ms** |
-| **Task Count** | 8 | **32** |
-| **MapMergeJob** | 2 (shuffle réseau) | **aucun** |
-| **Traitement** | Redistribution inter-workers | **Local sur chaque worker** |
-| **Données reçues par le coordinateur** | — | **57 bytes** |
-
-Le facteur d'amélioration est d'environ **×10**, uniquement grâce à la co-localisation.
-
-### d. Leçon à retenir
-
-La colocalisation dans Citus repose sur deux conditions cumulatives :
-
-**Condition structurelle :** les tables doivent être distribuées sur la même colonne sémantique (`client_id`), ce qui leur attribue le même `colocationid` dans `pg_dist_partition`.
-
-**Condition déclarative :** la requête doit inclure explicitement la condition de jointure sur cette colonne (`c.client_id = d.client_id`). Sans elle, Citus ne peut pas détecter la colocalisation et recourt au repartitioning même si les tables sont correctement configurées.
+> **Condition déclarative :** la requête doit inclure explicitement la condition de jointure sur cette colonne (`c.client_id = d.client_id`). Sans elle, Citus ne peut pas détecter la colocalisation et recourt au repartitioning même si les tables sont correctement configurées.
 
 ---
-
-## Étape 8 — Arrêter le cluster
-
-### a. Arrêter et supprimer les conteneurs
-
-```bash
-sudo docker-compose down
-```
-
-Cette commande arrête les 3 conteneurs et supprime le réseau Docker créé. Les données sont perdues.
-
-### b. Redémarrer PostgreSQL local
-
-Le PostgreSQL local avait été arrêté pour libérer le port 5432. On le redémarre :
-
-```bash
-sudo systemctl start postgresql
-sudo systemctl status postgresql
-```
