@@ -1,0 +1,4 @@
+/* Cacher le footer généré par le thème readthedocs */
+footer {
+  display: none !important;
+}

@@ -16,6 +16,8 @@ markdown_extensions:
       permalink: true
 theme:
   name: readthedocs
+extra_css:
+  - css/custom.css
 extra:
   generator: false
 
