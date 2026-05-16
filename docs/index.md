@@ -1,4 +1,5 @@
-# TP Hadoop avec Docker — Phase 1 : Exploration
+
+# Cours Big Data
 
 Bienvenue — cette documentation est organisée pour faciliter la lecture et la navigation.
 
