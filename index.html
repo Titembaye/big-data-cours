@@ -5,10 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Déploiement d'un cluster Hadoop en pseudo-distribué via Docker" />
       <link rel="shortcut icon" href="img/favicon.ico" />
-    <title>TP Hadoop — Phase 1</title>
+    <title>Cours Big Data</title>
     <link rel="stylesheet" href="css/theme.css" />
     <link rel="stylesheet" href="css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="css/custom.css" rel="stylesheet" />
     
       <script>
         // Current page data
@@ -30,7 +31,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href="." class="icon icon-home"> TP Hadoop — Phase 1
+          <a href="." class="icon icon-home"> Cours Big Data
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
@@ -146,7 +147,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href=".">TP Hadoop — Phase 1</a>
+          <a href=".">Cours Big Data</a>
         
       </nav>
       <div class="wy-nav-content">
@@ -162,7 +163,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="tp-hadoop-avec-docker-phase-1-exploration">TP Hadoop avec Docker — Phase 1 : Exploration<a class="headerlink" href="#tp-hadoop-avec-docker-phase-1-exploration" title="Permanent link">&para;</a></h1>
+                <h1 id="cours-big-data">Cours Big Data<a class="headerlink" href="#cours-big-data" title="Permanent link">&para;</a></h1>
 <p>Bienvenue — cette documentation est organisée pour faciliter la lecture et la navigation.</p>
 <p>Objectif : déployer un cluster Hadoop en pseudo-distribué via Docker, explorer HDFS et exécuter un job MapReduce.</p>
 <p>Pages principales :</p>
@@ -305,11 +306,11 @@
 </tbody>
 </table>
 <p>Le port <code>9000</code> est le point d'entrée déclaré dans <code>core-site.xml</code> :</p>
-<pre class="codehilite"><code class="language-xml">&lt;property&gt;
-  &lt;name&gt;fs.defaultFS&lt;/name&gt;
-  &lt;value&gt;hdfs://namenode:9000&lt;/value&gt;
-&lt;/property&gt;
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="nt">&lt;property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;name&gt;</span>fs.defaultFS<span class="nt">&lt;/name&gt;</span>
+<span class="w">  </span><span class="nt">&lt;value&gt;</span>hdfs://namenode:9000<span class="nt">&lt;/value&gt;</span>
+<span class="nt">&lt;/property&gt;</span>
+</code></pre></div>
 
 <p>Quand une commande <code>hdfs dfs</code> est exécutée, le client contacte le NameNode sur le port <code>9000</code> pour obtenir les métadonnées, puis communique directement avec les DataNodes pour lire ou écrire les blocs.</p>
 <blockquote>
@@ -319,12 +320,12 @@
 </blockquote>
 <hr />
 <h2 id="3-recuperer-le-depot">3. Récupérer le dépôt<a class="headerlink" href="#3-recuperer-le-depot" title="Permanent link">&para;</a></h2>
-<pre class="codehilite"><code class="language-bash">git clone https://github.com/big-data-europe/docker-hadoop.git
-cd docker-hadoop
-</code></pre>
+<div class="codehilite"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/big-data-europe/docker-hadoop.git
+<span class="nb">cd</span><span class="w"> </span>docker-hadoop
+</code></pre></div>
 
 <h3 id="structure-du-depot">Structure du dépôt<a class="headerlink" href="#structure-du-depot" title="Permanent link">&para;</a></h3>
-<pre class="codehilite"><code>docker-hadoop/
+<div class="codehilite"><pre><span></span><code>docker-hadoop/
 ├── base/               # Image de base commune à tous les conteneurs
 ├── namenode/           # Démon NameNode (HDFS)
 ├── datanode/           # Démon DataNode (HDFS)
@@ -334,7 +335,7 @@ cd docker-hadoop
 ├── submit/             # Utilitaire pour soumettre des jobs
 ├── hadoop.env          # Fichier de configuration central
 └── docker-compose.yml  # Définition du cluster
-</code></pre>
+</code></pre></div>
 
 <p>Chaque dossier contient un <code>Dockerfile</code> qui étend l'image <code>base</code> pour configurer le démon correspondant.</p>
 <h3 id="note-sur-la-version">Note sur la version<a class="headerlink" href="#note-sur-la-version" title="Permanent link">&para;</a></h3>
@@ -347,8 +348,8 @@ cd docker-hadoop
 <p>Le fichier <code>hadoop.env</code> est le fichier de configuration central partagé entre tous les conteneurs. Il utilise une convention de nommage précise que les étudiants doivent maîtriser.</p>
 <h3 id="convention-de-nommage">Convention de nommage<a class="headerlink" href="#convention-de-nommage" title="Permanent link">&para;</a></h3>
 <p>Chaque variable suit le schéma :</p>
-<pre class="codehilite"><code>PRÉFIXE_CONF_clé_avec_underscores=valeur
-</code></pre>
+<div class="codehilite"><pre><span></span><code>PRÉFIXE_CONF_clé_avec_underscores=valeur
+</code></pre></div>
 
 <p>Le préfixe indique dans quel fichier XML Hadoop la propriété sera injectée au démarrage du conteneur :</p>
 <table>
@@ -378,10 +379,10 @@ cd docker-hadoop
 </tbody>
 </table>
 <p>Les points <code>.</code> dans les noms de propriétés Hadoop sont remplacés par des underscores <code>_</code> :</p>
-<pre class="codehilite"><code>dfs.replication              →   HDFS_CONF_dfs_replication
+<div class="codehilite"><pre><span></span><code>dfs.replication              →   HDFS_CONF_dfs_replication
 fs.defaultFS                 →   CORE_CONF_fs_defaultFS
 yarn.resourcemanager.hostname →   YARN_CONF_yarn_resourcemanager_hostname
-</code></pre>
+</code></pre></div>
 
 <blockquote>
 <p><strong>Piège — le triple underscore <code>___</code></strong> : certaines clés contiennent des tirets <code>-</code> dans leur nom original. Ces tirets sont représentés par <strong>trois underscores</strong> dans <code>hadoop.env</code> :</p>
@@ -398,23 +399,23 @@ correspond à la propriété XML :
 <li>Le <strong>HistoryServer</strong> doit persister l'historique des jobs</li>
 </ul>
 <p>Les volumes résolvent ce problème en montant un répertoire persistant dans le conteneur.</p>
-<pre class="codehilite"><code class="language-yaml"># Extrait de docker-compose.yml
-namenode:
-  volumes:
-    - hadoop_namenode:/hadoop/dfs/name
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Extrait de docker-compose.yml</span>
+<span class="nt">namenode</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hadoop_namenode:/hadoop/dfs/name</span>
+</code></pre></div>
 
 <p>Cela signifie que <code>/hadoop/dfs/name</code> à l'intérieur du conteneur est stocké dans un volume Docker nommé <code>hadoop_namenode</code> sur la machine hôte. Après un <code>docker-compose down</code> puis <code>docker-compose up</code>, le NameNode retrouve ses métadonnées intactes.</p>
-<pre class="codehilite"><code class="language-bash"># Lister les volumes créés
-docker volume ls
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Lister les volumes créés</span>
+docker<span class="w"> </span>volume<span class="w"> </span>ls
+</code></pre></div>
 
 <p>Résultat attendu :</p>
-<pre class="codehilite"><code>DRIVER    VOLUME NAME
+<div class="codehilite"><pre><span></span><code>DRIVER    VOLUME NAME
 local     docker-hadoop_hadoop_namenode
 local     docker-hadoop_hadoop_datanode
 local     docker-hadoop_hadoop_historyserver
-</code></pre>
+</code></pre></div>
 
 <blockquote>
 <p><strong>Piège — données corrompues entre deux lancements</strong> : si la configuration Hadoop est modifiée après un premier démarrage (par exemple <code>dfs.replication</code>), le NameNode peut détecter une incohérence avec les métadonnées persistées et refuser de démarrer. Solution : supprimer les volumes avant de relancer.</p>
@@ -427,40 +428,40 @@ docker-compose up -d</code></p>
 <h2 id="6-lancer-le-cluster">6. Lancer le cluster<a class="headerlink" href="#6-lancer-le-cluster" title="Permanent link">&para;</a></h2>
 <h3 id="resoudre-le-probleme-de-permission-docker">Résoudre le problème de permission Docker<a class="headerlink" href="#resoudre-le-probleme-de-permission-docker" title="Permanent link">&para;</a></h3>
 <p>Par défaut, seul <code>root</code> peut communiquer avec le démon Docker. Si la commande <code>docker-compose up</code> retourne :</p>
-<pre class="codehilite"><code>permission denied while trying to connect to the Docker daemon socket
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="nv">permission</span><span class="w"> </span><span class="nv">denied</span><span class="w"> </span><span class="k">while</span><span class="w"> </span><span class="nv">trying</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="k">connect</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">the</span><span class="w"> </span><span class="nv">Docker</span><span class="w"> </span><span class="nv">daemon</span><span class="w"> </span><span class="nv">socket</span>
+</code></pre></div>
 
 <p>Exécuter :</p>
-<pre class="codehilite"><code class="language-bash"># Ajouter l'utilisateur courant au groupe docker
-sudo usermod -aG docker $USER
+<div class="codehilite"><pre><span></span><code><span class="c1"># Ajouter l&#39;utilisateur courant au groupe docker</span>
+sudo<span class="w"> </span>usermod<span class="w"> </span>-aG<span class="w"> </span>docker<span class="w"> </span><span class="nv">$USER</span>
 
-# Appliquer le changement dans le terminal courant
-newgrp docker
-</code></pre>
+<span class="c1"># Appliquer le changement dans le terminal courant</span>
+newgrp<span class="w"> </span>docker
+</code></pre></div>
 
 <blockquote>
 <p><code>newgrp docker</code> applique le changement dans le terminal courant uniquement. Un redémarrage de session est nécessaire pour que ce soit permanent.</p>
 </blockquote>
 <h3 id="demarrer-le-cluster">Démarrer le cluster<a class="headerlink" href="#demarrer-le-cluster" title="Permanent link">&para;</a></h3>
-<pre class="codehilite"><code class="language-bash">docker-compose up -d
-</code></pre>
+<div class="codehilite"><pre><span></span><code>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
 
 <p>L'option <code>-d</code> (detached) lance les conteneurs en arrière-plan.</p>
 <blockquote>
 <p><strong>Note</strong> : l'avertissement <code>version is obsolete</code> n'est pas bloquant. Les nouvelles versions de Docker Compose n'ont plus besoin du champ <code>version:</code> en tête du fichier.</p>
 </blockquote>
 <h3 id="verifier-que-les-conteneurs-sont-demarres">Vérifier que les conteneurs sont démarrés<a class="headerlink" href="#verifier-que-les-conteneurs-sont-demarres" title="Permanent link">&para;</a></h3>
-<pre class="codehilite"><code class="language-bash">docker ps
-</code></pre>
+<div class="codehilite"><pre><span></span><code>docker<span class="w"> </span>ps
+</code></pre></div>
 
 <p>Les 5 conteneurs doivent être en état <code>Up</code> et <code>healthy</code> :</p>
-<pre class="codehilite"><code>NAMES             STATUS
+<div class="codehilite"><pre><span></span><code>NAMES             STATUS
 namenode          Up X minutes (healthy)
 datanode          Up X minutes (healthy)
 resourcemanager   Up X minutes (healthy)
 nodemanager       Up X minutes (healthy)
 historyserver     Up X minutes (healthy)
-</code></pre>
+</code></pre></div>
 
 <blockquote>
 <p><strong>Piège — conteneur qui ne passe pas <code>healthy</code></strong> : si un conteneur reste en état <code>starting</code> ou passe en <code>unhealthy</code>, consulter ses logs :</p>
@@ -507,12 +508,12 @@ docker logs namenode</code></p>
 <p><strong>Piège — interfaces web inaccessibles</strong> : seul le NameNode expose ses ports vers la machine hôte (<code>localhost:9870</code> et <code>localhost:9000</code>). Les autres démons (ResourceManager sur 8088, NodeManager sur 8042, HistoryServer sur 8188) sont uniquement accessibles depuis le réseau Docker interne. Tenter d'ouvrir <code>http://localhost:8088</code> depuis le navigateur ne fonctionnera pas.</p>
 </blockquote>
 <h3 id="rapport-detaille-via-la-ligne-de-commande">Rapport détaillé via la ligne de commande<a class="headerlink" href="#rapport-detaille-via-la-ligne-de-commande" title="Permanent link">&para;</a></h3>
-<pre class="codehilite"><code class="language-bash"># Entrer dans le conteneur NameNode
-docker exec -it namenode bash
+<div class="codehilite"><pre><span></span><code><span class="c1"># Entrer dans le conteneur NameNode</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>namenode<span class="w"> </span>bash
 
-# Rapport complet du cluster
-hdfs dfsadmin -report
-</code></pre>
+<span class="c1"># Rapport complet du cluster</span>
+hdfs<span class="w"> </span>dfsadmin<span class="w"> </span>-report
+</code></pre></div>
 
 <blockquote>
 <p><strong>L'option <code>-it</code></strong> : <code>-i</code> (interactive) maintient l'entrée standard ouverte pour taper des commandes. <code>-t</code> (tty) alloue un pseudo-terminal pour avoir un prompt shell. Les deux ensemble donnent une session interactive comme un SSH.</p>
@@ -526,17 +527,17 @@ hdfs dfsadmin -report
 <hr />
 <h2 id="8-explorer-hdfs-en-ligne-de-commande">8. Explorer HDFS en ligne de commande<a class="headerlink" href="#8-explorer-hdfs-en-ligne-de-commande" title="Permanent link">&para;</a></h2>
 <h3 id="entrer-dans-le-namenode">Entrer dans le NameNode<a class="headerlink" href="#entrer-dans-le-namenode" title="Permanent link">&para;</a></h3>
-<pre class="codehilite"><code class="language-bash">docker exec -it namenode bash
-</code></pre>
+<div class="codehilite"><pre><span></span><code>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>namenode<span class="w"> </span>bash
+</code></pre></div>
 
 <h3 id="la-syntaxe-hdfs-dfs">La syntaxe <code>hdfs dfs</code><a class="headerlink" href="#la-syntaxe-hdfs-dfs" title="Permanent link">&para;</a></h3>
 <p>Les commandes HDFS imitent volontairement Unix pour réduire la courbe d'apprentissage :</p>
-<pre class="codehilite"><code>hdfs dfs -ls /
+<div class="codehilite"><pre><span></span><code>hdfs dfs -ls /
 │    │    │
 │    │    └─ commande style Unix
 │    └─ sous-système : opérations sur le système de fichiers distribué
 └─ outil principal Hadoop
-</code></pre>
+</code></pre></div>
 
 <table>
 <thead>
@@ -573,30 +574,30 @@ hdfs dfsadmin -report
 </tbody>
 </table>
 <h3 id="commandes-de-base">Commandes de base<a class="headerlink" href="#commandes-de-base" title="Permanent link">&para;</a></h3>
-<pre class="codehilite"><code class="language-bash"># Lister la racine HDFS
-hdfs dfs -ls /
+<div class="codehilite"><pre><span></span><code><span class="c1"># Lister la racine HDFS</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-ls<span class="w"> </span>/
 
-# Voir l'espace disque
-hdfs dfs -df -h /
+<span class="c1"># Voir l&#39;espace disque</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-df<span class="w"> </span>-h<span class="w"> </span>/
 
-# Créer un répertoire utilisateur
-hdfs dfs -mkdir -p /user/root
+<span class="c1"># Créer un répertoire utilisateur</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-mkdir<span class="w"> </span>-p<span class="w"> </span>/user/root
 
-# Créer un fichier de test en local dans le conteneur
-echo &quot;Bonjour Hadoop&quot; &gt; /tmp/test.txt
+<span class="c1"># Créer un fichier de test en local dans le conteneur</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Bonjour Hadoop&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>/tmp/test.txt
 
-# Uploader le fichier dans HDFS
-hdfs dfs -put /tmp/test.txt /user/root/
+<span class="c1"># Uploader le fichier dans HDFS</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-put<span class="w"> </span>/tmp/test.txt<span class="w"> </span>/user/root/
 
-# Vérifier que le fichier est bien dans HDFS
-hdfs dfs -ls /user/root/
+<span class="c1"># Vérifier que le fichier est bien dans HDFS</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-ls<span class="w"> </span>/user/root/
 
-# Lire le contenu depuis HDFS
-hdfs dfs -cat /user/root/test.txt
+<span class="c1"># Lire le contenu depuis HDFS</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-cat<span class="w"> </span>/user/root/test.txt
 
-# Supprimer le fichier
-hdfs dfs -rm /user/root/test.txt
-</code></pre>
+<span class="c1"># Supprimer le fichier</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-rm<span class="w"> </span>/user/root/test.txt
+</code></pre></div>
 
 <hr />
 <p><em>Phase 2 : Construction d'une image custom Hadoop 3.3.6 et exécution de jobs MapReduce — à venir.</em></p>
@@ -611,6 +612,7 @@ hdfs dfs -rm /user/root/test.txt
 
   <div role="contentinfo">
     <!-- Copyright etc -->
+      <p>© 2026 Ton Nom / Ton Cours - Tous droits réservés</p>
   </div>
 
   Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
@@ -648,5 +650,5 @@ hdfs dfs -rm /user/root/test.txt
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2026-05-16 10:42:56.752053+00:00
+Build Date UTC : 2026-05-16 13:22:09.821972+00:00
 -->

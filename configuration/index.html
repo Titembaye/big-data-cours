@@ -5,10 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Configuration - TP Hadoop — Phase 1</title>
+    <title>Configuration - Cours Big Data</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../css/custom.css" rel="stylesheet" />
     
       <script>
         // Current page data
@@ -30,7 +31,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href=".." class="icon icon-home"> TP Hadoop — Phase 1
+          <a href=".." class="icon icon-home"> Cours Big Data
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
@@ -80,7 +81,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="..">TP Hadoop — Phase 1</a>
+          <a href="..">Cours Big Data</a>
         
       </nav>
       <div class="wy-nav-content">
@@ -99,8 +100,8 @@
                 <h1 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h1>
 <p>Le fichier central <code>hadoop.env</code> injecte les propriétés dans les fichiers XML Hadoop.</p>
 <p>Convention :</p>
-<pre class="codehilite"><code>PRÉFIXE_CONF_clé_avec_underscores=valeur
-</code></pre>
+<div class="codehilite"><pre><span></span><code>PRÉFIXE_CONF_clé_avec_underscores=valeur
+</code></pre></div>
 
 <p>Préfixes : <code>CORE_CONF_</code>, <code>HDFS_CONF_</code>, <code>YARN_CONF_</code>, <code>MAPRED_CONF_</code>.</p>
 <p>Remplacement : les points <code>.</code> deviennent <code>_</code>. Les tirets <code>-</code> sont représentés par <code>___</code>.</p>
@@ -116,6 +117,7 @@
 
   <div role="contentinfo">
     <!-- Copyright etc -->
+      <p>© 2026 Ton Nom / Ton Cours - Tous droits réservés</p>
   </div>
 
   Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
