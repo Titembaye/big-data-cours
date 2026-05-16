@@ -1,0 +1,18 @@
+site_name: "TP Hadoop — Phase 1"
+site_description: "Déploiement d'un cluster Hadoop en pseudo-distribué via Docker"
+nav:
+  - Accueil: index.md
+  - Architecture: architecture.md
+  - Déploiement: deployment.md
+  - Configuration: configuration.md
+  - Volumes Docker: volumes.md
+  - Lancer le cluster: run.md
+  - Vérifier l'état: verify.md
+  - HDFS - Commandes: hdfs.md
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
+theme:
+  name: readthedocs
