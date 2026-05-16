@@ -1,4 +1,4 @@
-site_name: "TP Hadoop — Phase 1"
+site_name: "Cours Big Data"
 site_description: "Déploiement d'un cluster Hadoop en pseudo-distribué via Docker"
 nav:
   - Accueil: index.md
@@ -16,3 +16,7 @@ markdown_extensions:
       permalink: true
 theme:
   name: readthedocs
+extra:
+  generator: false
+
+copyright: © 2026 Ton Nom / Ton Cours - Tous droits réservés
