@@ -51,6 +51,30 @@
               <ul class="current">
                 <li class="toctree-l1 current"><a class="reference internal current" href="#">Explorer HDFS</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#structure-des-commandes">Structure des commandes</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#navigation-et-listage">Navigation et listage</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#creer-des-repertoires">Créer des répertoires</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#transferer-des-fichiers">Transférer des fichiers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#lire-des-fichiers">Lire des fichiers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#copier-et-deplacer">Copier et déplacer</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#supprimer">Supprimer</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#espace-disque">Espace disque</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#permissions-et-propriete">Permissions et propriété</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#facteur-de-replication">Facteur de réplication</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#verifier-lintegrite-des-fichiers">Vérifier l'intégrité des fichiers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#administration-du-cluster">Administration du cluster</a>
+    </li>
     </ul>
                 </li>
               </ul>
@@ -78,30 +102,153 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="explorer-hdfs">Explorer HDFS<a class="headerlink" href="#explorer-hdfs" title="Permanent link">&para;</a></h1>
-<p>Commandes à exécuter depuis l'intérieur du conteneur.</p>
-<div class="codehilite"><pre><span></span><code><span class="c1"># Lister la racine</span>
+<p>Toutes les commandes s'exécutent depuis l'intérieur du conteneur (<code>docker exec -it hadoop-tp bash</code>).</p>
+<hr />
+<h2 id="structure-des-commandes">Structure des commandes<a class="headerlink" href="#structure-des-commandes" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="n">hdfs</span><span class="w"> </span><span class="n">dfs</span><span class="w"> </span><span class="o">-&lt;</span><span class="n">commande</span><span class="o">&gt;</span><span class="w"> </span><span class="o">[</span><span class="n">options</span><span class="o">]</span><span class="w"> </span><span class="o">[</span><span class="n">chemin</span><span class="o">]</span>
+</code></pre></div>
+
+<p><code>hdfs dfs</code> opère sur le système de fichiers distribué. Les chemins HDFS commencent par <code>/</code> (racine HDFS, distincte de la racine Linux du conteneur).</p>
+<hr />
+<h2 id="navigation-et-listage">Navigation et listage<a class="headerlink" href="#navigation-et-listage" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Lister la racine HDFS</span>
 hdfs<span class="w"> </span>dfs<span class="w"> </span>-ls<span class="w"> </span>/
 
-<span class="c1"># Créer un répertoire</span>
-hdfs<span class="w"> </span>dfs<span class="w"> </span>-mkdir<span class="w"> </span>-p<span class="w"> </span>/user/root
+<span class="c1"># Lister récursivement</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-ls<span class="w"> </span>-R<span class="w"> </span>/
 
-<span class="c1"># Créer un fichier local et l&#39;uploader</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Bonjour Hadoop&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>/tmp/test.txt
+<span class="c1"># Lister avec tailles lisibles (Ko, Mo, Go)</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-ls<span class="w"> </span>-h<span class="w"> </span>/user
+</code></pre></div>
+
+<p>La sortie de <code>-ls</code> ressemble à Unix mais ajoute le <strong>facteur de réplication</strong> (colonne 2) et le <strong>nom du bloc</strong> :</p>
+<div class="codehilite"><pre><span></span><code>-rw-r--r--   1 root supergroup         15 2024-01-01 12:00 /user/root/test.txt
+              ^
+              facteur de réplication (1 = pas de copie redondante)
+</code></pre></div>
+
+<hr />
+<h2 id="creer-des-repertoires">Créer des répertoires<a class="headerlink" href="#creer-des-repertoires" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Créer un répertoire</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-mkdir<span class="w"> </span>/data
+
+<span class="c1"># Créer avec les parents intermédiaires (-p comme mkdir -p Linux)</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-mkdir<span class="w"> </span>-p<span class="w"> </span>/user/root/projets
+</code></pre></div>
+
+<hr />
+<h2 id="transferer-des-fichiers">Transférer des fichiers<a class="headerlink" href="#transferer-des-fichiers" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Uploader un fichier local vers HDFS</span>
 hdfs<span class="w"> </span>dfs<span class="w"> </span>-put<span class="w"> </span>/tmp/test.txt<span class="w"> </span>/user/root/
 
-<span class="c1"># Lire le fichier depuis HDFS</span>
+<span class="c1"># Uploader plusieurs fichiers</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-put<span class="w"> </span>/tmp/*.txt<span class="w"> </span>/user/root/
+
+<span class="c1"># Même chose avec -copyFromLocal (alias de -put)</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-copyFromLocal<span class="w"> </span>/tmp/test.txt<span class="w"> </span>/user/root/
+
+<span class="c1"># Télécharger un fichier HDFS vers le système local</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-get<span class="w"> </span>/user/root/test.txt<span class="w"> </span>/tmp/copie.txt
+
+<span class="c1"># Alias de -get</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-copyToLocal<span class="w"> </span>/user/root/test.txt<span class="w"> </span>/tmp/copie.txt
+</code></pre></div>
+
+<hr />
+<h2 id="lire-des-fichiers">Lire des fichiers<a class="headerlink" href="#lire-des-fichiers" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Afficher le contenu complet</span>
 hdfs<span class="w"> </span>dfs<span class="w"> </span>-cat<span class="w"> </span>/user/root/test.txt
 
-<span class="c1"># Espace disponible</span>
+<span class="c1"># Afficher les N premières lignes</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-head<span class="w"> </span>/user/root/test.txt
+
+<span class="c1"># Afficher les dernières lignes</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-tail<span class="w"> </span>/user/root/test.txt
+
+<span class="c1"># Afficher avec décodage (fichiers texte compressés)</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-text<span class="w"> </span>/user/root/fichier.gz
+</code></pre></div>
+
+<hr />
+<h2 id="copier-et-deplacer">Copier et déplacer<a class="headerlink" href="#copier-et-deplacer" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Copier dans HDFS (source et destination dans HDFS)</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-cp<span class="w"> </span>/user/root/test.txt<span class="w"> </span>/data/test.txt
+
+<span class="c1"># Déplacer / renommer dans HDFS</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-mv<span class="w"> </span>/user/root/test.txt<span class="w"> </span>/user/root/ancien.txt
+</code></pre></div>
+
+<hr />
+<h2 id="supprimer">Supprimer<a class="headerlink" href="#supprimer" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Supprimer un fichier</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-rm<span class="w"> </span>/user/root/test.txt
+
+<span class="c1"># Supprimer un répertoire et son contenu</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-rm<span class="w"> </span>-r<span class="w"> </span>/user/root/projets
+
+<span class="c1"># Supprimer sans passer par la corbeille HDFS</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-rm<span class="w"> </span>-skipTrash<span class="w"> </span>/user/root/test.txt
+</code></pre></div>
+
+<p>Par défaut, les fichiers supprimés vont dans <code>/user/&lt;nom&gt;/.Trash</code> — comme une corbeille. <code>-skipTrash</code> supprime définitivement.</p>
+<hr />
+<h2 id="espace-disque">Espace disque<a class="headerlink" href="#espace-disque" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Espace total disponible sur HDFS</span>
 hdfs<span class="w"> </span>dfs<span class="w"> </span>-df<span class="w"> </span>-h<span class="w"> </span>/
 
-<span class="c1"># Supprimer le fichier</span>
-hdfs<span class="w"> </span>dfs<span class="w"> </span>-rm<span class="w"> </span>/user/root/test.txt
+<span class="c1"># Taille d&#39;un répertoire ou fichier</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-du<span class="w"> </span>-h<span class="w"> </span>/user/root
+
+<span class="c1"># Taille résumée (total du répertoire seulement)</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-du<span class="w"> </span>-s<span class="w"> </span>-h<span class="w"> </span>/user/root
 </code></pre></div>
 
-<p>Rapport de l'état du cluster :</p>
-<div class="codehilite"><pre><span></span><code>hdfs<span class="w"> </span>dfsadmin<span class="w"> </span>-report
+<hr />
+<h2 id="permissions-et-propriete">Permissions et propriété<a class="headerlink" href="#permissions-et-propriete" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Changer les permissions (même syntaxe que chmod Linux)</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-chmod<span class="w"> </span><span class="m">755</span><span class="w"> </span>/user/root/test.txt
+
+<span class="c1"># Changer le propriétaire</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-chown<span class="w"> </span>root:supergroup<span class="w"> </span>/user/root/test.txt
 </code></pre></div>
+
+<hr />
+<h2 id="facteur-de-replication">Facteur de réplication<a class="headerlink" href="#facteur-de-replication" title="Permanent link">&para;</a></h2>
+<p>Le facteur de réplication définit combien de copies d'un bloc HDFS sont conservées sur les DataNodes.</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Voir le facteur de réplication d&#39;un fichier</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-stat<span class="w"> </span>%r<span class="w"> </span>/user/root/test.txt
+
+<span class="c1"># Changer le facteur de réplication</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-setrep<span class="w"> </span><span class="m">2</span><span class="w"> </span>/user/root/test.txt
+
+<span class="c1"># Changer récursivement sur un répertoire</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-setrep<span class="w"> </span>-R<span class="w"> </span><span class="m">2</span><span class="w"> </span>/user/root
+</code></pre></div>
+
+<p>Avec un seul DataNode, mettre un facteur &gt; 1 génère des warnings ("under-replicated blocks") car il n'y a pas assez de nœuds pour stocker les copies.</p>
+<hr />
+<h2 id="verifier-lintegrite-des-fichiers">Vérifier l'intégrité des fichiers<a class="headerlink" href="#verifier-lintegrite-des-fichiers" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Vérifier les checksums d&#39;un fichier</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-checksum<span class="w"> </span>/user/root/test.txt
+
+<span class="c1"># Vérifier l&#39;état du système de fichiers (blocs manquants, corrompus)</span>
+hdfs<span class="w"> </span>fsck<span class="w"> </span>/
+</code></pre></div>
+
+<p><code>hdfs fsck</code> analyse l'ensemble du système de fichiers et signale les blocs sous-répliqués, manquants ou corrompus.</p>
+<hr />
+<h2 id="administration-du-cluster">Administration du cluster<a class="headerlink" href="#administration-du-cluster" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Rapport complet : DataNodes actifs, espace disque, blocs</span>
+hdfs<span class="w"> </span>dfsadmin<span class="w"> </span>-report
+
+<span class="c1"># État du Safemode (mode lecture seule au démarrage)</span>
+hdfs<span class="w"> </span>dfsadmin<span class="w"> </span>-safemode<span class="w"> </span>get
+
+<span class="c1"># Forcer la sortie du Safemode</span>
+hdfs<span class="w"> </span>dfsadmin<span class="w"> </span>-safemode<span class="w"> </span>leave
+</code></pre></div>
+
+<p>Le <strong>Safemode</strong> est un état de démarrage : le NameNode attend que suffisamment de DataNodes aient rapporté leurs blocs avant d'accepter des écritures. En TP, s'il reste bloqué : <code>hdfs dfsadmin -safemode leave</code>.</p>
               
             </div>
           </div><footer>
