@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Déploiement - Cours Big Data</title>
+    <title>Démarrage - Cours Big Data</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
@@ -13,7 +13,7 @@
     
       <script>
         // Current page data
-        var mkdocs_page_name = "D\u00e9ploiement";
+        var mkdocs_page_name = "D\u00e9marrage";
         var mkdocs_page_input_path = "deployment.md";
         var mkdocs_page_url = null;
       </script>
@@ -44,34 +44,20 @@
                 <li class="toctree-l1"><a class="reference internal" href="..">Accueil</a>
                 </li>
               </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
-                </li>
-              </ul>
               <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="#">Déploiement</a>
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Démarrage</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#1-recuperer-limage">1. Récupérer l'image</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-lancer-le-conteneur">2. Lancer le conteneur</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-demarrer-hdfs-dans-le-conteneur">3. Démarrer HDFS dans le conteneur</a>
+    </li>
     </ul>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../configuration/">Configuration</a>
-                </li>
-              </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../volumes/">Volumes Docker</a>
-                </li>
-              </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../run/">Lancer le cluster</a>
-                </li>
-              </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../verify/">Vérifier l'état</a>
-                </li>
-              </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../hdfs/">HDFS - Commandes</a>
+                <li class="toctree-l1"><a class="reference internal" href="../hdfs/">Explorer HDFS</a>
                 </li>
               </ul>
       </div>
@@ -88,7 +74,7 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-      <li class="breadcrumb-item active">Déploiement</li>
+      <li class="breadcrumb-item active">Démarrage</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -97,20 +83,44 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="deploiement">Déploiement<a class="headerlink" href="#deploiement" title="Permanent link">&para;</a></h1>
-<p>Récupérer le dépôt recommandé pour ce TP :</p>
-<div class="codehilite"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/big-data-europe/docker-hadoop.git
-<span class="nb">cd</span><span class="w"> </span>docker-hadoop
+                <h1 id="demarrage">Démarrage<a class="headerlink" href="#demarrage" title="Permanent link">&para;</a></h1>
+<h2 id="1-recuperer-limage">1. Récupérer l'image<a class="headerlink" href="#1-recuperer-limage" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code>docker<span class="w"> </span>pull<span class="w"> </span>apache/hadoop:3
 </code></pre></div>
 
-<p>Structure principale du dépôt : <code>base/</code>, <code>namenode/</code>, <code>datanode/</code>, <code>resourcemanager/</code>, <code>nodemanager/</code>, <code>historyserver/</code>, <code>submit/</code>, <code>hadoop.env</code>, <code>docker-compose.yml</code>.</p>
-<p>Voir aussi la page <code>Lancer le cluster</code> pour les commandes de démarrage.</p>
+<h2 id="2-lancer-le-conteneur">2. Lancer le conteneur<a class="headerlink" href="#2-lancer-le-conteneur" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--name<span class="w"> </span>hadoop-tp<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--hostname<span class="w"> </span>hadoop<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="m">9870</span>:9870<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>apache/hadoop:3<span class="w"> </span>bash
+</code></pre></div>
+
+<h2 id="3-demarrer-hdfs-dans-le-conteneur">3. Démarrer HDFS dans le conteneur<a class="headerlink" href="#3-demarrer-hdfs-dans-le-conteneur" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Formater le NameNode (première fois uniquement)</span>
+hdfs<span class="w"> </span>namenode<span class="w"> </span>-format<span class="w"> </span>-nonInteractive
+
+<span class="c1"># Démarrer les démons HDFS</span>
+hdfs<span class="w"> </span>--daemon<span class="w"> </span>start<span class="w"> </span>namenode
+hdfs<span class="w"> </span>--daemon<span class="w"> </span>start<span class="w"> </span>datanode
+</code></pre></div>
+
+<p>Vérifier que les démons tournent :</p>
+<div class="codehilite"><pre><span></span><code>jps
+</code></pre></div>
+
+<p>Résultat attendu :</p>
+<div class="codehilite"><pre><span></span><code>NameNode
+DataNode
+Jps
+</code></pre></div>
+
+<p>Interface web disponible sur la machine hôte : <code>http://localhost:9870</code></p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../architecture/" class="btn btn-neutral float-left" title="Architecture"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../configuration/" class="btn btn-neutral float-right" title="Configuration">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href=".." class="btn btn-neutral float-left" title="Accueil"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../hdfs/" class="btn btn-neutral float-right" title="Explorer HDFS">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -134,10 +144,10 @@
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../architecture/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../configuration/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../hdfs/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

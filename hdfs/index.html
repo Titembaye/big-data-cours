@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>HDFS - Commandes - Cours Big Data</title>
+    <title>Explorer HDFS - Cours Big Data</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
@@ -13,7 +13,7 @@
     
       <script>
         // Current page data
-        var mkdocs_page_name = "HDFS - Commandes";
+        var mkdocs_page_name = "Explorer HDFS";
         var mkdocs_page_input_path = "hdfs.md";
         var mkdocs_page_url = null;
       </script>
@@ -45,31 +45,11 @@
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
-                </li>
-              </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../deployment/">Déploiement</a>
-                </li>
-              </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../configuration/">Configuration</a>
-                </li>
-              </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../volumes/">Volumes Docker</a>
-                </li>
-              </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../run/">Lancer le cluster</a>
-                </li>
-              </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../verify/">Vérifier l'état</a>
+                <li class="toctree-l1"><a class="reference internal" href="../deployment/">Démarrage</a>
                 </li>
               </ul>
               <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="#">HDFS - Commandes</a>
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Explorer HDFS</a>
     <ul class="current">
     </ul>
                 </li>
@@ -88,7 +68,7 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-      <li class="breadcrumb-item active">HDFS - Commandes</li>
+      <li class="breadcrumb-item active">Explorer HDFS</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -97,31 +77,36 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="hdfs-commandes">HDFS - Commandes<a class="headerlink" href="#hdfs-commandes" title="Permanent link">&para;</a></h1>
-<p>Commandes de base HDFS :</p>
-<div class="codehilite"><pre><span></span><code><span class="c1"># Lister la racine HDFS</span>
+                <h1 id="explorer-hdfs">Explorer HDFS<a class="headerlink" href="#explorer-hdfs" title="Permanent link">&para;</a></h1>
+<p>Commandes à exécuter depuis l'intérieur du conteneur.</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Lister la racine</span>
 hdfs<span class="w"> </span>dfs<span class="w"> </span>-ls<span class="w"> </span>/
 
-<span class="c1"># Voir l&#39;espace disque</span>
-hdfs<span class="w"> </span>dfs<span class="w"> </span>-df<span class="w"> </span>-h<span class="w"> </span>/
-
-<span class="c1"># Créer un répertoire utilisateur</span>
+<span class="c1"># Créer un répertoire</span>
 hdfs<span class="w"> </span>dfs<span class="w"> </span>-mkdir<span class="w"> </span>-p<span class="w"> </span>/user/root
 
-<span class="c1"># Uploader un fichier</span>
+<span class="c1"># Créer un fichier local et l&#39;uploader</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Bonjour Hadoop&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>/tmp/test.txt
 hdfs<span class="w"> </span>dfs<span class="w"> </span>-put<span class="w"> </span>/tmp/test.txt<span class="w"> </span>/user/root/
 
-<span class="c1"># Lire le contenu</span>
+<span class="c1"># Lire le fichier depuis HDFS</span>
 hdfs<span class="w"> </span>dfs<span class="w"> </span>-cat<span class="w"> </span>/user/root/test.txt
 
-<span class="c1"># Supprimer</span>
+<span class="c1"># Espace disponible</span>
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-df<span class="w"> </span>-h<span class="w"> </span>/
+
+<span class="c1"># Supprimer le fichier</span>
 hdfs<span class="w"> </span>dfs<span class="w"> </span>-rm<span class="w"> </span>/user/root/test.txt
+</code></pre></div>
+
+<p>Rapport de l'état du cluster :</p>
+<div class="codehilite"><pre><span></span><code>hdfs<span class="w"> </span>dfsadmin<span class="w"> </span>-report
 </code></pre></div>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../verify/" class="btn btn-neutral float-left" title="Vérifier l'état"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../deployment/" class="btn btn-neutral float-left" title="Démarrage"><span class="icon icon-circle-arrow-left"></span> Previous</a>
     </div>
 
   <hr/>
@@ -145,7 +130,7 @@ hdfs<span class="w"> </span>dfs<span class="w"> </span>-rm<span class="w"> </spa
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../verify/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../deployment/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
   </span>
