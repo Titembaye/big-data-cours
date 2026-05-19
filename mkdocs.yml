@@ -1,14 +1,9 @@
 site_name: "Cours Big Data"
-site_description: "Déploiement d'un cluster Hadoop en pseudo-distribué via Docker"
+site_description: "TP Hadoop avec Docker"
 nav:
   - Accueil: index.md
-  - Architecture: architecture.md
-  - Déploiement: deployment.md
-  - Configuration: configuration.md
-  - Volumes Docker: volumes.md
-  - Lancer le cluster: run.md
-  - Vérifier l'état: verify.md
-  - HDFS - Commandes: hdfs.md
+  - Démarrage: deployment.md
+  - Explorer HDFS: hdfs.md
 markdown_extensions:
   - admonition
   - codehilite

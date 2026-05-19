@@ -1,12 +1,43 @@
-# Déploiement
+# Démarrage
 
-Récupérer le dépôt recommandé pour ce TP :
+## 1. Récupérer l'image
 
 ```bash
-git clone https://github.com/big-data-europe/docker-hadoop.git
-cd docker-hadoop
+docker pull apache/hadoop:3
 ```
 
-Structure principale du dépôt : `base/`, `namenode/`, `datanode/`, `resourcemanager/`, `nodemanager/`, `historyserver/`, `submit/`, `hadoop.env`, `docker-compose.yml`.
+## 2. Lancer le conteneur
 
-Voir aussi la page `Lancer le cluster` pour les commandes de démarrage.
+```bash
+docker run -it --name hadoop-tp \
+  --hostname hadoop \
+  -p 9870:9870 \
+  apache/hadoop:3 bash
+```
+
+## 3. Démarrer HDFS dans le conteneur
+
+```bash
+# Formater le NameNode (première fois uniquement)
+hdfs namenode -format -nonInteractive
+
+# Démarrer les démons HDFS
+hdfs --daemon start namenode
+hdfs --daemon start datanode
+```
+
+Vérifier que les démons tournent :
+
+```bash
+jps
+```
+
+Résultat attendu :
+
+```
+NameNode
+DataNode
+Jps
+```
+
+Interface web disponible sur la machine hôte : `http://localhost:9870`
