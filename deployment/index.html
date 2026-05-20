@@ -47,11 +47,13 @@
               <ul class="current">
                 <li class="toctree-l1 current"><a class="reference internal current" href="#">Démarrage</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#1-recuperer-limage">1. Récupérer l'image</a>
+    <li class="toctree-l2"><a class="reference internal" href="#1-lancer-le-cluster">1. Lancer le cluster</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#2-lancer-le-conteneur">2. Lancer le conteneur</a>
+    <li class="toctree-l2"><a class="reference internal" href="#2-verifier-que-le-cluster-est-pret">2. Vérifier que le cluster est prêt</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#3-demarrer-hdfs-dans-le-conteneur">3. Démarrer HDFS dans le conteneur</a>
+    <li class="toctree-l2"><a class="reference internal" href="#3-acceder-au-namenode">3. Accéder au NameNode</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4-arreter-le-cluster">4. Arrêter le cluster</a>
     </li>
     </ul>
                 </li>
@@ -84,37 +86,35 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="demarrage">Démarrage<a class="headerlink" href="#demarrage" title="Permanent link">&para;</a></h1>
-<h2 id="1-recuperer-limage">1. Récupérer l'image<a class="headerlink" href="#1-recuperer-limage" title="Permanent link">&para;</a></h2>
-<div class="codehilite"><pre><span></span><code>docker<span class="w"> </span>pull<span class="w"> </span>apache/hadoop:3
+<h2 id="1-lancer-le-cluster">1. Lancer le cluster<a class="headerlink" href="#1-lancer-le-cluster" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
 </code></pre></div>
 
-<h2 id="2-lancer-le-conteneur">2. Lancer le conteneur<a class="headerlink" href="#2-lancer-le-conteneur" title="Permanent link">&para;</a></h2>
-<div class="codehilite"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--name<span class="w"> </span>hadoop-tp<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--hostname<span class="w"> </span>hadoop<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-p<span class="w"> </span><span class="m">9870</span>:9870<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>apache/hadoop:3<span class="w"> </span>bash
+<p>Cela démarre deux conteneurs :
+- <code>namenode</code> — le NameNode HDFS (interface web sur le port 9870)
+- <code>datanode</code> — le DataNode HDFS (se connecte automatiquement au NameNode)</p>
+<h2 id="2-verifier-que-le-cluster-est-pret">2. Vérifier que le cluster est prêt<a class="headerlink" href="#2-verifier-que-le-cluster-est-pret" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code>docker-compose<span class="w"> </span>ps
 </code></pre></div>
 
-<h2 id="3-demarrer-hdfs-dans-le-conteneur">3. Démarrer HDFS dans le conteneur<a class="headerlink" href="#3-demarrer-hdfs-dans-le-conteneur" title="Permanent link">&para;</a></h2>
-<div class="codehilite"><pre><span></span><code><span class="c1"># Formater le NameNode (première fois uniquement)</span>
-hdfs<span class="w"> </span>namenode<span class="w"> </span>-format<span class="w"> </span>-nonInteractive
-
-<span class="c1"># Démarrer les démons HDFS</span>
-hdfs<span class="w"> </span>--daemon<span class="w"> </span>start<span class="w"> </span>namenode
-hdfs<span class="w"> </span>--daemon<span class="w"> </span>start<span class="w"> </span>datanode
+<p>Attendre que les deux conteneurs soient en état <code>Up</code>. Puis vérifier que le DataNode est bien enregistré :</p>
+<div class="codehilite"><pre><span></span><code>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>namenode<span class="w"> </span>hdfs<span class="w"> </span>dfsadmin<span class="w"> </span>-report
 </code></pre></div>
 
-<p>Vérifier que les démons tournent :</p>
-<div class="codehilite"><pre><span></span><code>jps
-</code></pre></div>
-
-<p>Résultat attendu :</p>
-<div class="codehilite"><pre><span></span><code>NameNode
-DataNode
-Jps
-</code></pre></div>
-
+<p>Résultat attendu : <strong>Live datanodes (1)</strong></p>
 <p>Interface web disponible sur la machine hôte : <code>http://localhost:9870</code></p>
+<h2 id="3-acceder-au-namenode">3. Accéder au NameNode<a class="headerlink" href="#3-acceder-au-namenode" title="Permanent link">&para;</a></h2>
+<p>Toutes les commandes HDFS s'exécutent depuis le conteneur <code>namenode</code> :</p>
+<div class="codehilite"><pre><span></span><code>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>namenode<span class="w"> </span>bash
+</code></pre></div>
+
+<h2 id="4-arreter-le-cluster">4. Arrêter le cluster<a class="headerlink" href="#4-arreter-le-cluster" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code>docker-compose<span class="w"> </span>down
+</code></pre></div>
+
+<p>Pour supprimer aussi les volumes (données HDFS perdues) :</p>
+<div class="codehilite"><pre><span></span><code>docker-compose<span class="w"> </span>down<span class="w"> </span>-v
+</code></pre></div>
               
             </div>
           </div><footer>
