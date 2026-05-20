@@ -1,43 +1,47 @@
 # Démarrage
 
-## 1. Récupérer l'image
+## 1. Lancer le cluster
 
 ```bash
-docker pull apache/hadoop:3
+docker-compose up -d
 ```
 
-## 2. Lancer le conteneur
+Cela démarre deux conteneurs :
+- `namenode` — le NameNode HDFS (interface web sur le port 9870)
+- `datanode` — le DataNode HDFS (se connecte automatiquement au NameNode)
+
+## 2. Vérifier que le cluster est prêt
 
 ```bash
-docker run -it --name hadoop-tp \
-  --hostname hadoop \
-  -p 9870:9870 \
-  apache/hadoop:3 bash
+docker-compose ps
 ```
 
-## 3. Démarrer HDFS dans le conteneur
+Attendre que les deux conteneurs soient en état `Up`. Puis vérifier que le DataNode est bien enregistré :
 
 ```bash
-# Formater le NameNode (première fois uniquement)
-hdfs namenode -format -nonInteractive
-
-# Démarrer les démons HDFS
-hdfs --daemon start namenode
-hdfs --daemon start datanode
+docker exec -it namenode hdfs dfsadmin -report
 ```
 
-Vérifier que les démons tournent :
-
-```bash
-jps
-```
-
-Résultat attendu :
-
-```
-NameNode
-DataNode
-Jps
-```
+Résultat attendu : **Live datanodes (1)**
 
 Interface web disponible sur la machine hôte : `http://localhost:9870`
+
+## 3. Accéder au NameNode
+
+Toutes les commandes HDFS s'exécutent depuis le conteneur `namenode` :
+
+```bash
+docker exec -it namenode bash
+```
+
+## 4. Arrêter le cluster
+
+```bash
+docker-compose down
+```
+
+Pour supprimer aussi les volumes (données HDFS perdues) :
+
+```bash
+docker-compose down -v
+```

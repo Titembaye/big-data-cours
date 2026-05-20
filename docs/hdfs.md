@@ -1,6 +1,6 @@
 # Explorer HDFS
 
-Toutes les commandes s'exécutent depuis l'intérieur du conteneur (`docker exec -it hadoop-tp bash`).
+Toutes les commandes s'exécutent depuis l'intérieur du conteneur (`docker exec -it namenode bash`).
 
 ---
 
