@@ -47,13 +47,17 @@
               <ul class="current">
                 <li class="toctree-l1 current"><a class="reference internal current" href="#">Démarrage</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#1-lancer-le-cluster">1. Lancer le cluster</a>
+    <li class="toctree-l2"><a class="reference internal" href="#1-recuperer-les-fichiers">1. Récupérer les fichiers</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#2-verifier-que-le-cluster-est-pret">2. Vérifier que le cluster est prêt</a>
+    <li class="toctree-l2"><a class="reference internal" href="#2-verifier-les-permissions-docker">2. Vérifier les permissions Docker</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#3-acceder-au-namenode">3. Accéder au NameNode</a>
+    <li class="toctree-l2"><a class="reference internal" href="#3-lancer-le-cluster">3. Lancer le cluster</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#4-arreter-le-cluster">4. Arrêter le cluster</a>
+    <li class="toctree-l2"><a class="reference internal" href="#4-verifier-que-le-cluster-est-pret">4. Vérifier que le cluster est prêt</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5-acceder-au-namenode">5. Accéder au NameNode</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#6-arreter-le-cluster">6. Arrêter le cluster</a>
     </li>
     </ul>
                 </li>
@@ -86,14 +90,34 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="demarrage">Démarrage<a class="headerlink" href="#demarrage" title="Permanent link">&para;</a></h1>
-<h2 id="1-lancer-le-cluster">1. Lancer le cluster<a class="headerlink" href="#1-lancer-le-cluster" title="Permanent link">&para;</a></h2>
+<h2 id="1-recuperer-les-fichiers">1. Récupérer les fichiers<a class="headerlink" href="#1-recuperer-les-fichiers" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/Titembaye/big-data-cours.git
+<span class="nb">cd</span><span class="w"> </span>big-data-cours
+</code></pre></div>
+
+<h2 id="2-verifier-les-permissions-docker">2. Vérifier les permissions Docker<a class="headerlink" href="#2-verifier-les-permissions-docker" title="Permanent link">&para;</a></h2>
+<p>Si la commande <code>docker-compose up</code> retourne <code>permission denied while trying to connect to the Docker daemon socket</code> :</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Ajouter l&#39;utilisateur courant au groupe docker</span>
+sudo<span class="w"> </span>usermod<span class="w"> </span>-aG<span class="w"> </span>docker<span class="w"> </span><span class="nv">$USER</span>
+
+<span class="c1"># Appliquer le changement dans le terminal courant</span>
+newgrp<span class="w"> </span>docker
+</code></pre></div>
+
+<blockquote>
+<p><code>newgrp docker</code> applique le changement dans le terminal courant uniquement. Un redémarrage de session est nécessaire pour que ce soit permanent.</p>
+</blockquote>
+<h2 id="3-lancer-le-cluster">3. Lancer le cluster<a class="headerlink" href="#3-lancer-le-cluster" title="Permanent link">&para;</a></h2>
 <div class="codehilite"><pre><span></span><code>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
 </code></pre></div>
 
 <p>Cela démarre deux conteneurs :
 - <code>namenode</code> — le NameNode HDFS (interface web sur le port 9870)
 - <code>datanode</code> — le DataNode HDFS (se connecte automatiquement au NameNode)</p>
-<h2 id="2-verifier-que-le-cluster-est-pret">2. Vérifier que le cluster est prêt<a class="headerlink" href="#2-verifier-que-le-cluster-est-pret" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>L'avertissement <code>version is obsolete</code> n'est pas bloquant.</p>
+</blockquote>
+<h2 id="4-verifier-que-le-cluster-est-pret">4. Vérifier que le cluster est prêt<a class="headerlink" href="#4-verifier-que-le-cluster-est-pret" title="Permanent link">&para;</a></h2>
 <div class="codehilite"><pre><span></span><code>docker-compose<span class="w"> </span>ps
 </code></pre></div>
 
@@ -103,18 +127,22 @@
 
 <p>Résultat attendu : <strong>Live datanodes (1)</strong></p>
 <p>Interface web disponible sur la machine hôte : <code>http://localhost:9870</code></p>
-<h2 id="3-acceder-au-namenode">3. Accéder au NameNode<a class="headerlink" href="#3-acceder-au-namenode" title="Permanent link">&para;</a></h2>
+<h2 id="5-acceder-au-namenode">5. Accéder au NameNode<a class="headerlink" href="#5-acceder-au-namenode" title="Permanent link">&para;</a></h2>
 <p>Toutes les commandes HDFS s'exécutent depuis le conteneur <code>namenode</code> :</p>
 <div class="codehilite"><pre><span></span><code>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>namenode<span class="w"> </span>bash
 </code></pre></div>
 
-<h2 id="4-arreter-le-cluster">4. Arrêter le cluster<a class="headerlink" href="#4-arreter-le-cluster" title="Permanent link">&para;</a></h2>
+<h2 id="6-arreter-le-cluster">6. Arrêter le cluster<a class="headerlink" href="#6-arreter-le-cluster" title="Permanent link">&para;</a></h2>
 <div class="codehilite"><pre><span></span><code>docker-compose<span class="w"> </span>down
 </code></pre></div>
 
 <p>Pour supprimer aussi les volumes (données HDFS perdues) :</p>
 <div class="codehilite"><pre><span></span><code>docker-compose<span class="w"> </span>down<span class="w"> </span>-v
 </code></pre></div>
+
+<blockquote>
+<p>Ne jamais faire <code>-v</code> en production. En TP c'est acceptable car les données sont temporaires.</p>
+</blockquote>
               
             </div>
           </div><footer>
