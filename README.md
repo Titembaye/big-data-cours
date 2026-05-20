@@ -100,32 +100,21 @@ Quand une commande `hdfs dfs` est exécutée, le client contacte le NameNode sur
 ## 3. Récupérer le dépôt
 
 ```bash
-git clone https://github.com/big-data-europe/docker-hadoop.git
-cd docker-hadoop
+git clone https://github.com/Titembaye/big-data-cours.git
+cd big-data-cours
 ```
 
 ### Structure du dépôt
 
 ```
-docker-hadoop/
-├── base/               # Image de base commune à tous les conteneurs
-├── namenode/           # Démon NameNode (HDFS)
-├── datanode/           # Démon DataNode (HDFS)
-├── resourcemanager/    # Démon ResourceManager (YARN)
-├── nodemanager/        # Démon NodeManager (YARN)
-├── historyserver/      # Historique des jobs MapReduce
-├── submit/             # Utilitaire pour soumettre des jobs
-├── hadoop.env          # Fichier de configuration central
-└── docker-compose.yml  # Définition du cluster
+big-data-cours/
+├── docker-compose.yml  # Définition du cluster (namenode + datanode)
+└── hadoop.env          # Configuration Hadoop injectée dans les conteneurs
 ```
 
-Chaque dossier contient un `Dockerfile` qui étend l'image `base` pour configurer le démon correspondant.
+### Note sur les images
 
-### Note sur la version
-
-Le dépôt utilise Hadoop **3.2.1** via les images `bde2020`. Ces images ne sont plus maintenues activement et ne disposent pas de tags pour la version 3.3.6. Les concepts HDFS et MapReduce sont identiques entre les deux versions — ce TP est valable pour les deux.
-
-> En Phase 2, nous construirons notre propre image avec la version cible.
+Le dépôt utilise Hadoop **3.2.1** via les images `bde2020`. Ces images gèrent automatiquement la configuration Hadoop à partir des variables de `hadoop.env` et le formatage du NameNode au premier démarrage.
 
 ---
 
