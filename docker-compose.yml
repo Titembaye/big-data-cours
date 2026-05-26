@@ -1,0 +1,154 @@
+services:
+  namenode:
+    image: apache/hadoop:3.3.6
+    hostname: namenode
+    container_name: namenode
+    environment:
+      - ENSURE_NAMENODE_DIR=/tmp/hadoop-root/dfs/name
+    ports:
+      - "9870:9870"
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
+    command: ["hdfs", "namenode"]
+
+  resourcemanager:
+    image: apache/hadoop:3.3.6
+    hostname: resourcemanager
+    container_name: resourcemanager
+    depends_on:
+      - namenode
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
+    command: ["yarn", "resourcemanager"]
+
+  datanode1:
+    image: apache/hadoop:3.3.6
+    hostname: datanode1
+    container_name: datanode1
+    depends_on:
+      - namenode
+      - resourcemanager
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
+      - ./data/datanode1:/opt/hadoop/data/datanode
+    command:
+      ["hdfs", "datanode"]
+
+  nodemanager1:
+    image: apache/hadoop:3.3.6
+    hostname: nodemanager1
+    container_name: nodemanager1
+    depends_on:
+      - resourcemanager
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
+    command:
+      ["yarn", "nodemanager"]
+
+  datanode2:
+    image: apache/hadoop:3.3.6
+    hostname: datanode2
+    container_name: datanode2
+    depends_on:
+      - namenode
+      - resourcemanager
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
+      - ./data/datanode2:/opt/hadoop/data/datanode
+    command:
+      ["hdfs", "datanode"]
+
+  nodemanager2:
+    image: apache/hadoop:3.3.6
+    hostname: nodemanager2
+    container_name: nodemanager2
+    depends_on:
+      - resourcemanager
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
+    command:
+      ["yarn", "nodemanager"]
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=metastore
+      - POSTGRES_USER=hive
+      - POSTGRES_PASSWORD=hive123
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hive -d metastore"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  metastore:
+    image: apache/hive:4.0.0
+    container_name: metastore
+    depends_on:
+      postgres:
+        condition: service_healthy
+      namenode:
+        condition: service_started
+    environment:
+      - SERVICE_NAME=metastore
+      - DB_DRIVER=postgres
+      - SERVICE_OPTS=-Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=hive123
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./conf/hive-site.xml:/opt/hive/conf/hive-site.xml
+      - ./drivers/postgresql.jar:/opt/hive/lib/postgresql.jar
+    ports:
+      - "9083:9083"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/9083"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  hiveserver2:
+    image: apache/hive:4.0.0
+    container_name: hiveserver2
+    depends_on:
+      metastore:
+        condition: service_healthy
+    environment:
+      - SERVICE_NAME=hiveserver2
+      - IS_RESUME=true
+      - VERBOSE=true
+      - SERVICE_OPTS=-Dhive.metastore.uris=thrift://metastore:9083
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
+      - ./conf/hive-site.xml:/opt/hive/conf/hive-site.xml
+      - ./drivers/postgresql.jar:/opt/hive/lib/postgresql.jar
+    ports:
+      - "10000:10000"
+      - "10002:10002"
