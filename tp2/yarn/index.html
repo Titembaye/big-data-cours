@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Phase 3 — YARN - Cours Big Data</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../css/custom.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Phase 3 \u2014 YARN";
+        var mkdocs_page_input_path = "tp2/yarn.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Cours Big Data
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Accueil</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hadoop TP1</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/deployment/">Démarrage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/hdfs/">Explorer HDFS</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hadoop TP2</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../hdfs/">Phase 1 — HDFS</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mapreduce/">Phase 2 — MapReduce</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Phase 3 — YARN</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#31-configuration-yarn">3.1 Configuration YARN</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#32-mettre-a-jour-docker-composeyml">3.2 Mettre à jour docker-compose.yml</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#33-erreur-courante-nodemanager-ne-trouve-pas-le-resourcemanager">3.3 Erreur courante — NodeManager ne trouve pas le ResourceManager</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#34-verifier-le-cluster-yarn">3.4 Vérifier le cluster YARN</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#35-tester-la-distribution-reelle-avec-un-grand-fichier">3.5 Tester la distribution réelle avec un grand fichier</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#36-interfaces-web-disponibles">3.6 Interfaces web disponibles</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#etat-du-cluster-a-lissue-des-phases-2-et-3">État du cluster à l'issue des phases 2 et 3</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Cours Big Data</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Hadoop TP2</li>
+      <li class="breadcrumb-item active">Phase 3 — YARN</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="phase-3-yarn">Phase 3 — YARN<a class="headerlink" href="#phase-3-yarn" title="Permanent link">&para;</a></h1>
+<p>YARN (Yet Another Resource Negotiator) est le gestionnaire de ressources du cluster. Il reçoit les demandes de jobs, alloue les ressources disponibles sur les nœuds, et surveille l'exécution. Sans YARN, MapReduce tourne en mode local sur un seul nœud.</p>
+<p>YARN est composé de deux types de processus :</p>
+<ul>
+<li><strong>ResourceManager</strong> — un seul par cluster, chef d'orchestre qui alloue les ressources</li>
+<li><strong>NodeManager</strong> — un par nœud de données, exécute concrètement les tâches et rend compte au ResourceManager</li>
+</ul>
+<hr />
+<h2 id="31-configuration-yarn">3.1 Configuration YARN<a class="headerlink" href="#31-configuration-yarn" title="Permanent link">&para;</a></h2>
+<p>Créer <code>conf/yarn-site.xml</code> :</p>
+<div class="codehilite"><pre><span></span><code><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+<span class="nt">&lt;configuration&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>yarn.resourcemanager.hostname<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>resourcemanager<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>yarn.resourcemanager.address<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>resourcemanager:8032<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>yarn.resourcemanager.scheduler.address<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>resourcemanager:8030<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>yarn.resourcemanager.resource-tracker.address<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>resourcemanager:8031<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>yarn.nodemanager.aux-services<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>mapreduce_shuffle<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>yarn.nodemanager.aux-services.mapreduce_shuffle.class<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>org.apache.hadoop.mapred.ShuffleHandler<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>yarn.nodemanager.resource.memory-mb<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>1024<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>yarn.nodemanager.resource.cpu-vcores<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>1<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>yarn.scheduler.minimum-allocation-mb<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>512<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>yarn.scheduler.maximum-allocation-mb<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>1024<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="nt">&lt;/configuration&gt;</span>
+</code></pre></div>
+
+<ul>
+<li><code>yarn.resourcemanager.hostname</code> — nom du conteneur ResourceManager, utilisé par tous les nœuds pour le localiser sur le réseau Docker</li>
+<li><code>yarn.resourcemanager.resource-tracker.address</code> — port utilisé par les NodeManagers pour s'enregistrer (8031). Sans ce paramètre explicite, les NodeManagers ne trouvent pas le ResourceManager</li>
+<li><code>yarn.nodemanager.aux-services=mapreduce_shuffle</code> — active le service shuffle qui transfère les données entre les tâches Map et Reduce</li>
+<li><code>yarn.nodemanager.resource.memory-mb=1024</code> — chaque NodeManager expose 1 GB de RAM au cluster</li>
+<li><code>yarn.scheduler.minimum-allocation-mb=512</code> — un conteneur YARN demande au minimum 512 MB</li>
+</ul>
+<hr />
+<h2 id="32-mettre-a-jour-docker-composeyml">3.2 Mettre à jour docker-compose.yml<a class="headerlink" href="#32-mettre-a-jour-docker-composeyml" title="Permanent link">&para;</a></h2>
+<p>On ajoute le ResourceManager et deux NodeManagers. On garde 2 DataNodes et 2 NodeManagers pour rester dans les limites d'une machine avec 8 GB de RAM — au-delà, Docker utilise le swap et les jobs deviennent instables.</p>
+<p>Les quatre fichiers de configuration doivent être montés dans tous les conteneurs.</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">namenode</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apache/hadoop:3.3.6</span>
+<span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">namenode</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">namenode</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ENSURE_NAMENODE_DIR=/tmp/hadoop-root/dfs/name</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;9870:9870&quot;</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;hdfs&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;namenode&quot;</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">resourcemanager</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apache/hadoop:3.3.6</span>
+<span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">resourcemanager</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">resourcemanager</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">namenode</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8088:8088&quot;</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;yarn&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;resourcemanager&quot;</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">datanode1</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apache/hadoop:3.3.6</span>
+<span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">datanode1</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">datanode1</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">namenode</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/datanode1:/opt/hadoop/data/datanode</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;hdfs&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;datanode&quot;</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">nodemanager1</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apache/hadoop:3.3.6</span>
+<span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nodemanager1</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nodemanager1</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">resourcemanager</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;yarn&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;nodemanager&quot;</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">datanode2</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apache/hadoop:3.3.6</span>
+<span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">datanode2</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">datanode2</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">namenode</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/datanode2:/opt/hadoop/data/datanode</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;hdfs&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;datanode&quot;</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">nodemanager2</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apache/hadoop:3.3.6</span>
+<span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nodemanager2</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nodemanager2</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">resourcemanager</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;yarn&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;nodemanager&quot;</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+
+<p>Relancer le cluster :</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker-compose<span class="w"> </span>down
+sudo<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+sudo<span class="w"> </span>docker<span class="w"> </span>ps
+</code></pre></div>
+
+<p>On doit voir 6 conteneurs actifs : namenode, resourcemanager, datanode1, datanode2, nodemanager1, nodemanager2.</p>
+<hr />
+<h2 id="33-erreur-courante-nodemanager-ne-trouve-pas-le-resourcemanager">3.3 Erreur courante — NodeManager ne trouve pas le ResourceManager<a class="headerlink" href="#33-erreur-courante-nodemanager-ne-trouve-pas-le-resourcemanager" title="Permanent link">&para;</a></h2>
+<p>Si les NodeManagers démarrent puis s'arrêtent avec :</p>
+<div class="codehilite"><pre><span></span><code><span class="nv">Your</span><span class="w"> </span><span class="nv">endpoint</span><span class="w"> </span><span class="nv">configuration</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">wrong</span><span class="c1">; UnsetHostnameOrPort</span>
+<span class="nv">Retrying</span><span class="w"> </span><span class="k">connect</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">server</span>:<span class="w"> </span><span class="mi">0</span>.<span class="mi">0</span>.<span class="mi">0</span>.<span class="mi">0</span><span class="o">/</span><span class="mi">0</span>.<span class="mi">0</span>.<span class="mi">0</span>.<span class="mi">0</span>:<span class="mi">8031</span>
+</code></pre></div>
+
+<p>Vérifier le chemin de montage dans <code>docker-compose.yml</code> :</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker<span class="w"> </span>inspect<span class="w"> </span>nodemanager1<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>yarn-site
+</code></pre></div>
+
+<p>Le chemin de destination doit être exactement <code>/opt/hadoop/etc/hadoop/yarn-site.xml</code> et non <code>/opt/etc/hadoop/yarn-site.xml</code> — une faute de frappe courante.</p>
+<hr />
+<h2 id="34-verifier-le-cluster-yarn">3.4 Vérifier le cluster YARN<a class="headerlink" href="#34-verifier-le-cluster-yarn" title="Permanent link">&para;</a></h2>
+<p>L'interface web YARN est accessible sur <code>http://localhost:8088</code> :</p>
+<ul>
+<li><code>Active Nodes</code> — nombre de NodeManagers connectés</li>
+<li><code>Total Resources</code> — capacité totale en mémoire et CPU</li>
+<li><code>Applications</code> — historique et état des jobs soumis</li>
+</ul>
+<hr />
+<h2 id="35-tester-la-distribution-reelle-avec-un-grand-fichier">3.5 Tester la distribution réelle avec un grand fichier<a class="headerlink" href="#35-tester-la-distribution-reelle-avec-un-grand-fichier" title="Permanent link">&para;</a></h2>
+<p>Avec un petit fichier, Hadoop crée un seul bloc et une seule tâche Map — le job ne se distribue pas vraiment. Pour observer la distribution, générer un fichier de 15 MB (découpé en 15 blocs de 1 MB) :</p>
+<div class="codehilite"><pre><span></span><code>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;</span>
+<span class="s2">import random</span>
+<span class="s2">words = [&#39;hadoop&#39;, &#39;hdfs&#39;, &#39;mapreduce&#39;, &#39;yarn&#39;, &#39;datanode&#39;, &#39;namenode&#39;, &#39;cluster&#39;, &#39;distribue&#39;, &#39;bloc&#39;, &#39;fichier&#39;]</span>
+<span class="s2">for i in range(100000):</span>
+<span class="s2">    print(&#39; &#39;.join([random.choice(words) for _ in range(20)]))</span>
+<span class="s2">&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>/tmp/grand_fichier.txt
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code>hdfs<span class="w"> </span>dfs<span class="w"> </span>-put<span class="w"> </span>/tmp/grand_fichier.txt<span class="w"> </span>/user/tp/
+hadoop<span class="w"> </span>jar<span class="w"> </span>/opt/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.3.6.jar<span class="w"> </span>wordcount<span class="w"> </span>/user/tp/grand_fichier.txt<span class="w"> </span>/user/tp/output2
+</code></pre></div>
+
+<p>Dans les compteurs du job :</p>
+<div class="codehilite"><pre><span></span><code>Launched map tasks=15
+number of splits: 15
+Running job: job_1775780999512_0001   (plus de &quot;local&quot; dans l&#39;identifiant)
+</code></pre></div>
+
+<p>Les 15 tâches Map sont distribuées sur les 2 NodeManagers et s'exécutent par lots de 2 en parallèle.</p>
+<hr />
+<h2 id="36-interfaces-web-disponibles">3.6 Interfaces web disponibles<a class="headerlink" href="#36-interfaces-web-disponibles" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>URL</th>
+<th>Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HDFS NameNode</td>
+<td>http://localhost:9870</td>
+<td>État du cluster HDFS, navigation dans les fichiers</td>
+</tr>
+<tr>
+<td>YARN ResourceManager</td>
+<td>http://localhost:8088</td>
+<td>État du cluster YARN, suivi des jobs</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="etat-du-cluster-a-lissue-des-phases-2-et-3">État du cluster à l'issue des phases 2 et 3<a class="headerlink" href="#etat-du-cluster-a-lissue-des-phases-2-et-3" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code>NameNode          — port 9870  — carte du système de fichiers HDFS
+ResourceManager   — port 8088  — allocation des ressources YARN
+DataNode1         — stockage des blocs HDFS
+DataNode2         — stockage des blocs HDFS
+NodeManager1      — exécution des tâches MapReduce
+NodeManager2      — exécution des tâches MapReduce
+</code></pre></div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../mapreduce/" class="btn btn-neutral float-left" title="Phase 2 — MapReduce"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>© 2026 Cours Big Data - Tous droits réservés</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../mapreduce/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

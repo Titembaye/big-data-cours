@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Phase 1 — HDFS - Cours Big Data</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../css/custom.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Phase 1 \u2014 HDFS";
+        var mkdocs_page_input_path = "tp2/hdfs.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Cours Big Data
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Accueil</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hadoop TP1</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/deployment/">Démarrage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/hdfs/">Explorer HDFS</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hadoop TP2</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../">Introduction</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Phase 1 — HDFS</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#11-configuration-de-base">1.1 Configuration de base</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#12-demarrer-le-namenode">1.2 Démarrer le NameNode</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#13-ajouter-les-datanodes">1.3 Ajouter les DataNodes</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#14-erreur-courante-clusterid-incompatible">1.4 Erreur courante — clusterID incompatible</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#15-premiers-fichiers-dans-hdfs">1.5 Premiers fichiers dans HDFS</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#16-verifier-le-stockage-physique-des-blocs">1.6 Vérifier le stockage physique des blocs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#etat-du-cluster-a-lissue-de-la-phase-1">État du cluster à l'issue de la Phase 1</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mapreduce/">Phase 2 — MapReduce</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../yarn/">Phase 3 — YARN</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Cours Big Data</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Hadoop TP2</li>
+      <li class="breadcrumb-item active">Phase 1 — HDFS</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="phase-1-hdfs">Phase 1 — HDFS<a class="headerlink" href="#phase-1-hdfs" title="Permanent link">&para;</a></h1>
+<h2 id="11-configuration-de-base">1.1 Configuration de base<a class="headerlink" href="#11-configuration-de-base" title="Permanent link">&para;</a></h2>
+<p>HDFS a besoin de deux fichiers de configuration principaux. Le premier, <code>core-site.xml</code>, indique à Hadoop l'adresse du NameNode — sans ça, Hadoop ne sait pas où il se trouve sur le réseau et refuse de démarrer.</p>
+<p>Créer <code>conf/core-site.xml</code> :</p>
+<div class="codehilite"><pre><span></span><code><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+<span class="nt">&lt;configuration&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>fs.defaultFS<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>hdfs://namenode:8020<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="nt">&lt;/configuration&gt;</span>
+</code></pre></div>
+
+<p>Le second fichier, <code>hdfs-site.xml</code>, configure le comportement de HDFS. Le paramètre <code>dfs.replication</code> indique combien de fois chaque bloc de données doit être répliqué sur les DataNodes. On le fixe à 1 pour commencer avec un seul DataNode, puis on l'ajustera.</p>
+<p>Le paramètre <code>dfs.datanode.data.dir</code> indique au DataNode où stocker physiquement les blocs sur le disque. Sans ce paramètre, Hadoop utilise <code>/tmp/</code> qui est effacé à chaque redémarrage du conteneur.</p>
+<p>Créer <code>conf/hdfs-site.xml</code> :</p>
+<div class="codehilite"><pre><span></span><code><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+<span class="nt">&lt;configuration&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>dfs.replication<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>1<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>dfs.datanode.data.dir<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>/opt/hadoop/data/datanode<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>dfs.datanode.data.dir.perm<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>777<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="nt">&lt;/configuration&gt;</span>
+</code></pre></div>
+
+<p><code>dfs.datanode.data.dir.perm</code> évite une erreur de permissions lors du démarrage. Par défaut, Hadoop essaie de forcer ses propres permissions sur le dossier de données, ce qui échoue quand ce dossier est monté depuis la machine hôte via Docker.</p>
+<hr />
+<h2 id="12-demarrer-le-namenode">1.2 Démarrer le NameNode<a class="headerlink" href="#12-demarrer-le-namenode" title="Permanent link">&para;</a></h2>
+<p>Le NameNode est le chef d'orchestre du cluster HDFS. Il ne stocke pas de données, mais il connaît la carte complète du système de fichiers : quels fichiers existent, en combien de blocs ils sont découpés, et sur quels DataNodes ces blocs se trouvent.</p>
+<p>Créer <code>docker-compose.yml</code> :</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">namenode</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apache/hadoop:3.3.6</span>
+<span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">namenode</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">namenode</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ENSURE_NAMENODE_DIR=/tmp/hadoop-root/dfs/name</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;9870:9870&quot;</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;hdfs&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;namenode&quot;</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+
+<p>La variable <code>ENSURE_NAMENODE_DIR</code> demande à l'image Docker de formater automatiquement le système de fichiers HDFS au premier démarrage. Le port <code>9870</code> expose l'interface web du NameNode.</p>
+<p>Démarrer le conteneur :</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+sudo<span class="w"> </span>docker<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>namenode
+</code></pre></div>
+
+<p>Le NameNode est prêt quand les logs affichent :</p>
+<div class="codehilite"><pre><span></span><code>NameNode RPC up at: namenode/172.x.x.x:8020
+IPC Server listener on 8020: starting
+</code></pre></div>
+
+<p>L'interface web est accessible sur <code>http://localhost:9870</code>. On y voit l'état du cluster, la mémoire utilisée, et le nombre de DataNodes connectés — pour l'instant <strong>Live Nodes: 0</strong>.</p>
+<hr />
+<h2 id="13-ajouter-les-datanodes">1.3 Ajouter les DataNodes<a class="headerlink" href="#13-ajouter-les-datanodes" title="Permanent link">&para;</a></h2>
+<p>Les DataNodes sont les nœuds de stockage. Chaque DataNode stocke des blocs de données et envoie régulièrement un signal au NameNode (heartbeat) pour indiquer qu'il est toujours en vie.</p>
+<p>Préparer les dossiers de données persistants pour chaque DataNode :</p>
+<div class="codehilite"><pre><span></span><code>mkdir<span class="w"> </span>data/datanode1<span class="w"> </span>data/datanode2<span class="w"> </span>data/datanode3<span class="w"> </span>data/datanode4
+chmod<span class="w"> </span><span class="m">777</span><span class="w"> </span>data/datanode1<span class="w"> </span>data/datanode2<span class="w"> </span>data/datanode3<span class="w"> </span>data/datanode4
+</code></pre></div>
+
+<p>L'image Docker fait tourner Hadoop avec un utilisateur interne <code>hadoop</code> (UID 1000). Le <code>chmod 777</code> règle les problèmes de permissions sur les montages bind Docker.</p>
+<p>Modifier <code>docker-compose.yml</code> pour ajouter les quatre DataNodes :</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">namenode</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apache/hadoop:3.3.6</span>
+<span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">namenode</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">namenode</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ENSURE_NAMENODE_DIR=/tmp/hadoop-root/dfs/name</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;9870:9870&quot;</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;hdfs&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;namenode&quot;</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">datanode1</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apache/hadoop:3.3.6</span>
+<span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">datanode1</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">datanode1</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">namenode</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/datanode1:/opt/hadoop/data/datanode</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;hdfs&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;datanode&quot;</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">datanode2</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apache/hadoop:3.3.6</span>
+<span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">datanode2</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">datanode2</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">namenode</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/datanode2:/opt/hadoop/data/datanode</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;hdfs&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;datanode&quot;</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">datanode3</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apache/hadoop:3.3.6</span>
+<span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">datanode3</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">datanode3</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">namenode</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/datanode3:/opt/hadoop/data/datanode</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;hdfs&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;datanode&quot;</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">datanode4</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apache/hadoop:3.3.6</span>
+<span class="w">    </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">datanode4</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">datanode4</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">namenode</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/datanode4:/opt/hadoop/data/datanode</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;hdfs&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;datanode&quot;</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+
+<p><code>depends_on: namenode</code> indique à Docker de démarrer le NameNode avant les DataNodes. Chaque DataNode a son propre dossier <code>data/datanodeX</code> monté au même chemin interne <code>/opt/hadoop/data/datanode</code>.</p>
+<p>Relancer le cluster :</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker-compose<span class="w"> </span>down
+sudo<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
+
+<p>Sur <code>http://localhost:9870</code>, on voit maintenant <strong>Live Nodes: 4</strong>.</p>
+<hr />
+<h2 id="14-erreur-courante-clusterid-incompatible">1.4 Erreur courante — clusterID incompatible<a class="headerlink" href="#14-erreur-courante-clusterid-incompatible" title="Permanent link">&para;</a></h2>
+<p>Si un DataNode refuse de démarrer avec l'erreur :</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">Incompatible</span><span class="w"> </span><span class="nt">clusterIDs</span><span class="w"> </span><span class="nt">in</span><span class="w"> </span><span class="o">/</span><span class="nt">opt</span><span class="o">/</span><span class="nt">hadoop</span><span class="o">/</span><span class="nt">data</span><span class="o">/</span><span class="nt">datanode</span><span class="o">:</span>
+<span class="nt">namenode</span><span class="w"> </span><span class="nt">clusterID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">CID-xxx</span><span class="w"> </span><span class="o">;</span><span class="w"> </span><span class="nt">datanode</span><span class="w"> </span><span class="nt">clusterID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nt">CID-yyy</span>
+</code></pre></div>
+
+<p>Le NameNode a été recréé et a généré un nouvel identifiant de cluster, mais le DataNode a conservé l'ancien. Solution : vider les dossiers de données des DataNodes.</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker-compose<span class="w"> </span>down
+rm<span class="w"> </span>-rf<span class="w"> </span>data/datanode1/*<span class="w"> </span>data/datanode2/*<span class="w"> </span>data/datanode3/*<span class="w"> </span>data/datanode4/*
+sudo<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
+
+<hr />
+<h2 id="15-premiers-fichiers-dans-hdfs">1.5 Premiers fichiers dans HDFS<a class="headerlink" href="#15-premiers-fichiers-dans-hdfs" title="Permanent link">&para;</a></h2>
+<p>Entrer dans le conteneur namenode :</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>namenode<span class="w"> </span>bash
+</code></pre></div>
+
+<p>Créer un répertoire et y déposer un fichier :</p>
+<div class="codehilite"><pre><span></span><code>hdfs<span class="w"> </span>dfs<span class="w"> </span>-mkdir<span class="w"> </span>-p<span class="w"> </span>/user/tp
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Bonjour Hadoop, ceci est mon premier fichier HDFS !&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>/tmp/test.txt
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-put<span class="w"> </span>/tmp/test.txt<span class="w"> </span>/user/tp/
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-cat<span class="w"> </span>/user/tp/test.txt
+</code></pre></div>
+
+<hr />
+<h2 id="16-verifier-le-stockage-physique-des-blocs">1.6 Vérifier le stockage physique des blocs<a class="headerlink" href="#16-verifier-le-stockage-physique-des-blocs" title="Permanent link">&para;</a></h2>
+<p>HDFS découpe chaque fichier en blocs (128 MB par défaut) et les distribue sur les DataNodes. Depuis la machine hôte, on peut voir le bloc physique :</p>
+<div class="codehilite"><pre><span></span><code>ls<span class="w"> </span>data/datanode1/current/BP-*/current/finalized/subdir0/subdir0/
+</code></pre></div>
+
+<p>On trouve deux fichiers :</p>
+<ul>
+<li><code>blk_XXXXXXXXXX</code> — le bloc de données brut</li>
+<li><code>blk_XXXXXXXXXX_XXXX.meta</code> — le checksum pour détecter toute corruption</li>
+</ul>
+<div class="codehilite"><pre><span></span><code>cat<span class="w"> </span>data/datanode1/current/BP-*/current/finalized/subdir0/subdir0/blk_*<span class="o">[</span>^meta<span class="o">]</span>
+</code></pre></div>
+
+<p>Le contenu de <code>test.txt</code> est lisible directement dans le bloc. Le NameNode connaît la carte, les DataNodes stockent les blocs physiques.</p>
+<hr />
+<h2 id="etat-du-cluster-a-lissue-de-la-phase-1">État du cluster à l'issue de la Phase 1<a class="headerlink" href="#etat-du-cluster-a-lissue-de-la-phase-1" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code>NameNode   — port 9870  — carte du système de fichiers
+DataNode1  — stockage physique des blocs
+DataNode2  — stockage physique des blocs
+DataNode3  — stockage physique des blocs
+DataNode4  — stockage physique des blocs
+</code></pre></div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../" class="btn btn-neutral float-left" title="Introduction"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../mapreduce/" class="btn btn-neutral float-right" title="Phase 2 — MapReduce">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>© 2026 Cours Big Data - Tous droits réservés</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../mapreduce/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

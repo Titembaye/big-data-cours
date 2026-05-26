@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Phase 2 — MapReduce - Cours Big Data</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../css/custom.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Phase 2 \u2014 MapReduce";
+        var mkdocs_page_input_path = "tp2/mapreduce.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Cours Big Data
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Accueil</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hadoop TP1</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/deployment/">Démarrage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/hdfs/">Explorer HDFS</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hadoop TP2</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../hdfs/">Phase 1 — HDFS</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Phase 2 — MapReduce</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#21-verifier-que-les-exemples-mapreduce-sont-disponibles">2.1 Vérifier que les exemples MapReduce sont disponibles</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#22-preparer-les-donnees-dans-hdfs">2.2 Préparer les données dans HDFS</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#23-lancer-le-premier-job-wordcount">2.3 Lancer le premier job WordCount</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#24-remarque-sur-le-mode-dexecution">2.4 Remarque sur le mode d'exécution</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#25-ajouter-la-configuration-mapreduce">2.5 Ajouter la configuration MapReduce</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../yarn/">Phase 3 — YARN</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Cours Big Data</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Hadoop TP2</li>
+      <li class="breadcrumb-item active">Phase 2 — MapReduce</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="phase-2-mapreduce">Phase 2 — MapReduce<a class="headerlink" href="#phase-2-mapreduce" title="Permanent link">&para;</a></h1>
+<p>MapReduce est le moteur de calcul distribué de Hadoop. L'idée fondamentale est d'envoyer le programme vers les données plutôt que l'inverse — chaque nœud traite les blocs qu'il stocke localement.</p>
+<p>Un job MapReduce se déroule en trois étapes :</p>
+<ul>
+<li><strong>Map</strong> — chaque nœud lit sa portion de données et produit des paires clé/valeur</li>
+<li><strong>Shuffle</strong> — Hadoop regroupe automatiquement toutes les valeurs par clé</li>
+<li><strong>Reduce</strong> — chaque nœud agrège les valeurs d'une même clé pour produire le résultat final</li>
+</ul>
+<hr />
+<h2 id="21-verifier-que-les-exemples-mapreduce-sont-disponibles">2.1 Vérifier que les exemples MapReduce sont disponibles<a class="headerlink" href="#21-verifier-que-les-exemples-mapreduce-sont-disponibles" title="Permanent link">&para;</a></h2>
+<p>L'image <code>apache/hadoop:3.3.6</code> inclut un jar d'exemples prêts à l'emploi. Depuis le conteneur namenode :</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>namenode<span class="w"> </span>bash
+find<span class="w"> </span>/opt/hadoop<span class="w"> </span>-name<span class="w"> </span><span class="s2">&quot;hadoop-mapreduce-examples*.jar&quot;</span>
+</code></pre></div>
+
+<p>Le fichier se trouve à :</p>
+<div class="codehilite"><pre><span></span><code>/opt/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.3.6.jar
+</code></pre></div>
+
+<p>Pour lister tous les programmes disponibles :</p>
+<div class="codehilite"><pre><span></span><code>hadoop<span class="w"> </span>jar<span class="w"> </span>/opt/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.3.6.jar
+</code></pre></div>
+
+<hr />
+<h2 id="22-preparer-les-donnees-dans-hdfs">2.2 Préparer les données dans HDFS<a class="headerlink" href="#22-preparer-les-donnees-dans-hdfs" title="Permanent link">&para;</a></h2>
+<p>Créer un répertoire et y déposer un fichier texte :</p>
+<div class="codehilite"><pre><span></span><code>hdfs<span class="w"> </span>dfs<span class="w"> </span>-mkdir<span class="w"> </span>-p<span class="w"> </span>/user/tp
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;hadoop est un framework distribue</span>
+<span class="s2">hadoop permet de stocker des donnees sur plusieurs noeuds</span>
+<span class="s2">hdfs est le systeme de fichiers de hadoop</span>
+<span class="s2">mapreduce est le moteur de calcul de hadoop</span>
+<span class="s2">les datanodes stockent les blocs de donnees</span>
+<span class="s2">le namenode gere la carte des fichiers&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>/tmp/texte.txt
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code>hdfs<span class="w"> </span>dfs<span class="w"> </span>-put<span class="w"> </span>/tmp/texte.txt<span class="w"> </span>/user/tp/
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-ls<span class="w"> </span>/user/tp/
+</code></pre></div>
+
+<hr />
+<h2 id="23-lancer-le-premier-job-wordcount">2.3 Lancer le premier job WordCount<a class="headerlink" href="#23-lancer-le-premier-job-wordcount" title="Permanent link">&para;</a></h2>
+<p>WordCount compte le nombre d'occurrences de chaque mot dans un fichier texte.</p>
+<div class="codehilite"><pre><span></span><code>hadoop<span class="w"> </span>jar<span class="w"> </span>/opt/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.3.6.jar<span class="w"> </span>wordcount<span class="w"> </span>/user/tp/texte.txt<span class="w"> </span>/user/tp/output
+</code></pre></div>
+
+<p>Le dossier de sortie ne doit pas exister avant le lancement.</p>
+<p>Les logs affichent la progression :</p>
+<div class="codehilite"><pre><span></span><code>map 0% reduce 0%
+map 100% reduce 0%
+map 100% reduce 100%
+Job completed successfully
+</code></pre></div>
+
+<p>Lire le résultat :</p>
+<div class="codehilite"><pre><span></span><code>hdfs<span class="w"> </span>dfs<span class="w"> </span>-cat<span class="w"> </span>/user/tp/output/part-r-00000
+</code></pre></div>
+
+<p>Pour relancer un job, supprimer d'abord le dossier de sortie :</p>
+<div class="codehilite"><pre><span></span><code>hdfs<span class="w"> </span>dfs<span class="w"> </span>-rm<span class="w"> </span>-r<span class="w"> </span>/user/tp/output
+</code></pre></div>
+
+<hr />
+<h2 id="24-remarque-sur-le-mode-dexecution">2.4 Remarque sur le mode d'exécution<a class="headerlink" href="#24-remarque-sur-le-mode-dexecution" title="Permanent link">&para;</a></h2>
+<p>Dans les logs du job, on peut lire :</p>
+<div class="codehilite"><pre><span></span><code>Running job: job_local1434341543_0001
+</code></pre></div>
+
+<p>Le mot <strong>local</strong> indique que MapReduce a tourné en mode local — tout s'est exécuté dans le NameNode sans distribuer le travail. C'est parce que YARN n'est pas encore configuré. On règle ça dans la <a href="../yarn/">Phase 3</a>.</p>
+<hr />
+<h2 id="25-ajouter-la-configuration-mapreduce">2.5 Ajouter la configuration MapReduce<a class="headerlink" href="#25-ajouter-la-configuration-mapreduce" title="Permanent link">&para;</a></h2>
+<p>Il faut indiquer à MapReduce d'utiliser YARN comme gestionnaire de ressources. Sans ce fichier, MapReduce reste en mode local.</p>
+<p>Créer <code>conf/mapred-site.xml</code> :</p>
+<div class="codehilite"><pre><span></span><code><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+<span class="nt">&lt;configuration&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>mapreduce.framework.name<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>yarn<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>mapreduce.application.classpath<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>/opt/hadoop/share/hadoop/mapreduce/*:/opt/hadoop/share/hadoop/mapreduce/lib/*<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>mapreduce.map.memory.mb<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>512<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>mapreduce.reduce.memory.mb<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>512<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>mapreduce.map.java.opts<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>-Xmx400m<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>mapreduce.reduce.java.opts<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>-Xmx400m<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>yarn.app.mapreduce.am.resource.mb<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>512<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="w">  </span><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>yarn.app.mapreduce.am.command-opts<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>-Xmx400m<span class="nt">&lt;/value&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/property&gt;</span>
+<span class="nt">&lt;/configuration&gt;</span>
+</code></pre></div>
+
+<ul>
+<li><code>mapreduce.framework.name=yarn</code> — bascule MapReduce en mode distribué via YARN</li>
+<li><code>mapreduce.application.classpath</code> — indique où trouver les jars MapReduce dans le conteneur</li>
+<li><code>mapreduce.map.memory.mb</code> / <code>mapreduce.reduce.memory.mb</code> — mémoire par tâche, fixée à 512 MB pour rester dans les limites d'une machine avec 8 GB de RAM</li>
+<li><code>yarn.app.mapreduce.am.resource.mb</code> — mémoire de l'ApplicationMaster. Par défaut il demande 1536 MB — on le fixe à 512 MB</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../hdfs/" class="btn btn-neutral float-left" title="Phase 1 — HDFS"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../yarn/" class="btn btn-neutral float-right" title="Phase 3 — YARN">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>© 2026 Cours Big Data - Tous droits réservés</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../hdfs/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../yarn/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
