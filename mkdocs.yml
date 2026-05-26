@@ -1,0 +1,26 @@
+site_name: "Cours Big Data"
+site_description: "TP Hadoop, MapReduce, YARN et plus avec Docker"
+nav:
+  - Accueil: index.md
+  - Hadoop TP1:
+    - Introduction: tp1/index.md
+    - Démarrage: tp1/deployment.md
+    - Explorer HDFS: tp1/hdfs.md
+  - Hadoop TP2:
+    - Introduction: tp2/index.md
+    - "Phase 1 — HDFS": tp2/hdfs.md
+    - "Phase 2 — MapReduce": tp2/mapreduce.md
+    - "Phase 3 — YARN": tp2/yarn.md
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
+theme:
+  name: readthedocs
+extra_css:
+  - css/custom.css
+extra:
+  generator: false
+
+copyright: © 2026 Cours Big Data - Tous droits réservés

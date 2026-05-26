@@ -1,0 +1,252 @@
+# Phase 3 — YARN
+
+YARN (Yet Another Resource Negotiator) est le gestionnaire de ressources du cluster. Il reçoit les demandes de jobs, alloue les ressources disponibles sur les nœuds, et surveille l'exécution. Sans YARN, MapReduce tourne en mode local sur un seul nœud.
+
+YARN est composé de deux types de processus :
+
+- **ResourceManager** — un seul par cluster, chef d'orchestre qui alloue les ressources
+- **NodeManager** — un par nœud de données, exécute concrètement les tâches et rend compte au ResourceManager
+
+---
+
+## 3.1 Configuration YARN
+
+Créer `conf/yarn-site.xml` :
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <property>
+    <name>yarn.resourcemanager.hostname</name>
+    <value>resourcemanager</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.address</name>
+    <value>resourcemanager:8032</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.scheduler.address</name>
+    <value>resourcemanager:8030</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.resource-tracker.address</name>
+    <value>resourcemanager:8031</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.aux-services</name>
+    <value>mapreduce_shuffle</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.aux-services.mapreduce_shuffle.class</name>
+    <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.resource.memory-mb</name>
+    <value>1024</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.resource.cpu-vcores</name>
+    <value>1</value>
+  </property>
+  <property>
+    <name>yarn.scheduler.minimum-allocation-mb</name>
+    <value>512</value>
+  </property>
+  <property>
+    <name>yarn.scheduler.maximum-allocation-mb</name>
+    <value>1024</value>
+  </property>
+</configuration>
+```
+
+- `yarn.resourcemanager.hostname` — nom du conteneur ResourceManager, utilisé par tous les nœuds pour le localiser sur le réseau Docker
+- `yarn.resourcemanager.resource-tracker.address` — port utilisé par les NodeManagers pour s'enregistrer (8031). Sans ce paramètre explicite, les NodeManagers ne trouvent pas le ResourceManager
+- `yarn.nodemanager.aux-services=mapreduce_shuffle` — active le service shuffle qui transfère les données entre les tâches Map et Reduce
+- `yarn.nodemanager.resource.memory-mb=1024` — chaque NodeManager expose 1 GB de RAM au cluster
+- `yarn.scheduler.minimum-allocation-mb=512` — un conteneur YARN demande au minimum 512 MB
+
+---
+
+## 3.2 Mettre à jour docker-compose.yml
+
+On ajoute le ResourceManager et deux NodeManagers. On garde 2 DataNodes et 2 NodeManagers pour rester dans les limites d'une machine avec 8 GB de RAM — au-delà, Docker utilise le swap et les jobs deviennent instables.
+
+Les quatre fichiers de configuration doivent être montés dans tous les conteneurs.
+
+```yaml
+services:
+  namenode:
+    image: apache/hadoop:3.3.6
+    hostname: namenode
+    container_name: namenode
+    environment:
+      - ENSURE_NAMENODE_DIR=/tmp/hadoop-root/dfs/name
+    ports:
+      - "9870:9870"
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
+    command: ["hdfs", "namenode"]
+
+  resourcemanager:
+    image: apache/hadoop:3.3.6
+    hostname: resourcemanager
+    container_name: resourcemanager
+    depends_on:
+      - namenode
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
+    command: ["yarn", "resourcemanager"]
+
+  datanode1:
+    image: apache/hadoop:3.3.6
+    hostname: datanode1
+    container_name: datanode1
+    depends_on:
+      - namenode
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
+      - ./data/datanode1:/opt/hadoop/data/datanode
+    command: ["hdfs", "datanode"]
+
+  nodemanager1:
+    image: apache/hadoop:3.3.6
+    hostname: nodemanager1
+    container_name: nodemanager1
+    depends_on:
+      - resourcemanager
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
+    command: ["yarn", "nodemanager"]
+
+  datanode2:
+    image: apache/hadoop:3.3.6
+    hostname: datanode2
+    container_name: datanode2
+    depends_on:
+      - namenode
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
+      - ./data/datanode2:/opt/hadoop/data/datanode
+    command: ["hdfs", "datanode"]
+
+  nodemanager2:
+    image: apache/hadoop:3.3.6
+    hostname: nodemanager2
+    container_name: nodemanager2
+    depends_on:
+      - resourcemanager
+    volumes:
+      - ./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml
+      - ./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml
+      - ./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml
+      - ./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml
+    command: ["yarn", "nodemanager"]
+```
+
+Relancer le cluster :
+
+```bash
+sudo docker-compose down
+sudo docker-compose up -d
+sudo docker ps
+```
+
+On doit voir 6 conteneurs actifs : namenode, resourcemanager, datanode1, datanode2, nodemanager1, nodemanager2.
+
+---
+
+## 3.3 Erreur courante — NodeManager ne trouve pas le ResourceManager
+
+Si les NodeManagers démarrent puis s'arrêtent avec :
+
+```
+Your endpoint configuration is wrong; UnsetHostnameOrPort
+Retrying connect to server: 0.0.0.0/0.0.0.0:8031
+```
+
+Vérifier le chemin de montage dans `docker-compose.yml` :
+
+```bash
+sudo docker inspect nodemanager1 | grep yarn-site
+```
+
+Le chemin de destination doit être exactement `/opt/hadoop/etc/hadoop/yarn-site.xml` et non `/opt/etc/hadoop/yarn-site.xml` — une faute de frappe courante.
+
+---
+
+## 3.4 Vérifier le cluster YARN
+
+L'interface web YARN est accessible sur `http://localhost:8088` :
+
+- `Active Nodes` — nombre de NodeManagers connectés
+- `Total Resources` — capacité totale en mémoire et CPU
+- `Applications` — historique et état des jobs soumis
+
+---
+
+## 3.5 Tester la distribution réelle avec un grand fichier
+
+Avec un petit fichier, Hadoop crée un seul bloc et une seule tâche Map — le job ne se distribue pas vraiment. Pour observer la distribution, générer un fichier de 15 MB (découpé en 15 blocs de 1 MB) :
+
+```bash
+python -c "
+import random
+words = ['hadoop', 'hdfs', 'mapreduce', 'yarn', 'datanode', 'namenode', 'cluster', 'distribue', 'bloc', 'fichier']
+for i in range(100000):
+    print(' '.join([random.choice(words) for _ in range(20)]))
+" > /tmp/grand_fichier.txt
+```
+
+```bash
+hdfs dfs -put /tmp/grand_fichier.txt /user/tp/
+hadoop jar /opt/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.3.6.jar wordcount /user/tp/grand_fichier.txt /user/tp/output2
+```
+
+Dans les compteurs du job :
+
+```
+Launched map tasks=15
+number of splits: 15
+Running job: job_1775780999512_0001   (plus de "local" dans l'identifiant)
+```
+
+Les 15 tâches Map sont distribuées sur les 2 NodeManagers et s'exécutent par lots de 2 en parallèle.
+
+---
+
+## 3.6 Interfaces web disponibles
+
+| Interface | URL | Rôle |
+|-----------|-----|------|
+| HDFS NameNode | http://localhost:9870 | État du cluster HDFS, navigation dans les fichiers |
+| YARN ResourceManager | http://localhost:8088 | État du cluster YARN, suivi des jobs |
+
+---
+
+## État du cluster à l'issue des phases 2 et 3
+
+```
+NameNode          — port 9870  — carte du système de fichiers HDFS
+ResourceManager   — port 8088  — allocation des ressources YARN
+DataNode1         — stockage des blocs HDFS
+DataNode2         — stockage des blocs HDFS
+NodeManager1      — exécution des tâches MapReduce
+NodeManager2      — exécution des tâches MapReduce
+```
