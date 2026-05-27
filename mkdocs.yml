@@ -2,15 +2,6 @@ site_name: "Cours Big Data"
 site_description: "TP Hadoop, MapReduce, YARN et plus avec Docker"
 nav:
   - Accueil: index.md
-  - Hadoop TP1:
-    - Introduction: tp1/index.md
-    - Démarrage: tp1/deployment.md
-    - Explorer HDFS: tp1/hdfs.md
-  - Hadoop TP2:
-    - Introduction: tp2/index.md
-    - "Phase 1 — HDFS": tp2/hdfs.md
-    - "Phase 2 — MapReduce": tp2/mapreduce.md
-    - "Phase 3 — YARN": tp2/yarn.md
   - PostgreSQL:
     - Vue d'ensemble: tp_postgres/index.md
     - "Partie 1 — FDW Distribué":
@@ -22,6 +13,15 @@ nav:
       - Analyse et performances: tp_postgres/citus/analyse.md
     - "Partie 3 — FDW Fédéré":
       - Introduction: tp_postgres/fdw_federe/index.md
+  - Hadoop TP1:
+    - Introduction: tp1/index.md
+    - Démarrage: tp1/deployment.md
+    - Explorer HDFS: tp1/hdfs.md
+  - Hadoop TP2:
+    - Introduction: tp2/index.md
+    - "Phase 1 — HDFS": tp2/hdfs.md
+    - "Phase 2 — MapReduce": tp2/mapreduce.md
+    - "Phase 3 — YARN": tp2/yarn.md
 markdown_extensions:
   - admonition
   - codehilite
