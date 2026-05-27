@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>Setup cluster et tables - Cours Big Data</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../../css/custom.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Setup cluster et tables";
+        var mkdocs_page_input_path = "tp_postgres/citus/setup.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../.." class="icon icon-home"> Cours Big Data
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../..">Accueil</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hadoop TP1</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../tp1/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../tp1/deployment/">Démarrage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../tp1/hdfs/">Explorer HDFS</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hadoop TP2</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../tp2/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../tp2/hdfs/">Phase 1 — HDFS</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../tp2/mapreduce/">Phase 2 — MapReduce</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../tp2/yarn/">Phase 3 — YARN</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">PostgreSQL</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../../">Vue d'ensemble</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >Partie 1 — FDW Distribué</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../fdw_distribue/">Introduction</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" >Partie 2 — Citus</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../">Introduction</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">Setup cluster et tables</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#etape-1-preparer-lenvironnement-docker">Étape 1 — Préparer l'environnement Docker</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#creer-le-dossier-de-travail">Créer le dossier de travail</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#creer-le-fichier-docker-composeyml">Créer le fichier docker-compose.yml</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#etape-2-demarrer-le-cluster-progressivement">Étape 2 — Démarrer le cluster progressivement</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#a-demarrage-du-coordinateur">a. Démarrage du coordinateur</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#b-ajouter-le-premier-worker">b. Ajouter le premier worker</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#c-ajouter-le-second-worker">c. Ajouter le second worker</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#etape-3-creer-et-distribuer-les-tables">Étape 3 — Créer et distribuer les tables</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#a-creer-les-tables">a. Créer les tables</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#b-distribuer-les-tables">b. Distribuer les tables</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#c-verifier-la-distribution">c. Vérifier la distribution</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../data/">Chargement des données</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../analyse/">Analyse et performances</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >Partie 3 — FDW Fédéré</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../fdw_federe/">Introduction</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">Cours Big Data</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">PostgreSQL</li>
+          <li class="breadcrumb-item">Partie 2 — Citus</li>
+      <li class="breadcrumb-item active">Setup cluster et tables</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="setup-cluster-tables-et-distribution">Setup — Cluster, tables et distribution<a class="headerlink" href="#setup-cluster-tables-et-distribution" title="Permanent link">&para;</a></h1>
+<h2 id="etape-1-preparer-lenvironnement-docker">Étape 1 — Préparer l'environnement Docker<a class="headerlink" href="#etape-1-preparer-lenvironnement-docker" title="Permanent link">&para;</a></h2>
+<h3 id="creer-le-dossier-de-travail">Créer le dossier de travail<a class="headerlink" href="#creer-le-dossier-de-travail" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code>mkdir<span class="w"> </span>~/citus_tp<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>~/citus_tp
+</code></pre></div>
+
+<h3 id="creer-le-fichier-docker-composeyml">Créer le fichier docker-compose.yml<a class="headerlink" href="#creer-le-fichier-docker-composeyml" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code>nano<span class="w"> </span>docker-compose.yml
+</code></pre></div>
+
+<p>Copiez le contenu suivant, puis sauvegardez avec <code>Ctrl+O</code> et quittez avec <code>Ctrl+X</code> :</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">networks</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">citus_network</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">driver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bridge</span>
+
+<span class="nt">services</span><span class="p">:</span>
+
+<span class="w">  </span><span class="nt">coordinateur</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">citusdata/citus:12.1.3</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">citus_coordinateur</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;5432:5432&quot;</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">POSTGRES_USER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres</span>
+<span class="w">      </span><span class="nt">POSTGRES_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">admin</span>
+<span class="w">      </span><span class="nt">POSTGRES_DB</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flowshop_db</span>
+<span class="w">      </span><span class="nt">POSTGRES_HOST_AUTH_METHOD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trust</span>
+<span class="w">    </span><span class="nt">networks</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">citus_network</span>
+
+<span class="w">  </span><span class="nt">worker1</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">citusdata/citus:12.1.3</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">citus_worker1</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;5433:5432&quot;</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">POSTGRES_USER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres</span>
+<span class="w">      </span><span class="nt">POSTGRES_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">admin</span>
+<span class="w">      </span><span class="nt">POSTGRES_DB</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flowshop_db</span>
+<span class="w">      </span><span class="nt">POSTGRES_HOST_AUTH_METHOD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trust</span>
+<span class="w">    </span><span class="nt">networks</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">citus_network</span>
+
+<span class="w">  </span><span class="nt">worker2</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">citusdata/citus:12.1.3</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">citus_worker2</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;5434:5432&quot;</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">POSTGRES_USER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres</span>
+<span class="w">      </span><span class="nt">POSTGRES_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">admin</span>
+<span class="w">      </span><span class="nt">POSTGRES_DB</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flowshop_db</span>
+<span class="w">      </span><span class="nt">POSTGRES_HOST_AUTH_METHOD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trust</span>
+<span class="w">    </span><span class="nt">networks</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">citus_network</span>
+</code></pre></div>
+
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><code>POSTGRES_HOST_AUTH_METHOD: trust</code> autorise les connexions entre nœuds sans mot de passe sur le réseau Docker interne. Sans cette option, le coordinateur ne peut pas interroger les workers et toute requête distribuée échoue avec <code>fe_sendauth: no password supplied</code>.</p>
+</div>
+<hr />
+<h2 id="etape-2-demarrer-le-cluster-progressivement">Étape 2 — Démarrer le cluster progressivement<a class="headerlink" href="#etape-2-demarrer-le-cluster-progressivement" title="Permanent link">&para;</a></h2>
+<h3 id="a-demarrage-du-coordinateur">a. Démarrage du coordinateur<a class="headerlink" href="#a-demarrage-du-coordinateur" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>coordinateur
+sudo<span class="w"> </span>docker<span class="w"> </span>ps
+sudo<span class="w"> </span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>citus_coordinateur<span class="w"> </span>psql<span class="w"> </span>-U<span class="w"> </span>postgres<span class="w"> </span>-d<span class="w"> </span>flowshop_db
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="n">citus_version</span><span class="p">();</span>
+</code></pre></div>
+
+<p>Vous devez voir le numéro de version de Citus. Quittez avec <code>\q</code>.</p>
+<h3 id="b-ajouter-le-premier-worker">b. Ajouter le premier worker<a class="headerlink" href="#b-ajouter-le-premier-worker" title="Permanent link">&para;</a></h3>
+<p>Dans un autre terminal, démarrez le worker1 :</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>worker1
+sudo<span class="w"> </span>docker<span class="w"> </span>ps
+</code></pre></div>
+
+<p>Sur le coordinateur, déclarez le worker :</p>
+<div class="codehilite"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="n">citus_add_node</span><span class="p">(</span><span class="s1">&#39;citus_worker1&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">5432</span><span class="p">);</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">citus_get_active_worker_nodes</span><span class="p">();</span>
+</code></pre></div>
+
+<p>Vous devez voir une ligne avec <code>citus_worker1</code>.</p>
+<h3 id="c-ajouter-le-second-worker">c. Ajouter le second worker<a class="headerlink" href="#c-ajouter-le-second-worker" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>worker2
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="n">citus_add_node</span><span class="p">(</span><span class="s1">&#39;citus_worker2&#39;</span><span class="p">,</span><span class="w"> </span><span class="mi">5432</span><span class="p">);</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">citus_get_active_worker_nodes</span><span class="p">();</span>
+</code></pre></div>
+
+<p>Vous devez voir deux lignes. Le cluster est prêt.</p>
+<hr />
+<h2 id="etape-3-creer-et-distribuer-les-tables">Étape 3 — Créer et distribuer les tables<a class="headerlink" href="#etape-3-creer-et-distribuer-les-tables" title="Permanent link">&para;</a></h2>
+<p>Connectez-vous au coordinateur :</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>citus_coordinateur<span class="w"> </span>psql<span class="w"> </span>-U<span class="w"> </span>postgres<span class="w"> </span>-d<span class="w"> </span>flowshop_db
+</code></pre></div>
+
+<h3 id="a-creer-les-tables">a. Créer les tables<a class="headerlink" href="#a-creer-les-tables" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">clients</span><span class="p">(</span>
+<span class="w">    </span><span class="n">client_id</span><span class="w">        </span><span class="nb">SERIAL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">nom</span><span class="w">              </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">prenom</span><span class="w">           </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">pays</span><span class="w">             </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">date_inscription</span><span class="w"> </span><span class="nb">DATE</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">current_date</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">produits</span><span class="p">(</span>
+<span class="w">    </span><span class="n">produit_id</span><span class="w">  </span><span class="nb">SERIAL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">nom_produit</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">categorie</span><span class="w">   </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">prix</span><span class="w">        </span><span class="nb">DECIMAL</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">commandes</span><span class="p">(</span>
+<span class="w">    </span><span class="n">commande_id</span><span class="w">   </span><span class="nb">SERIAL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">client_id</span><span class="w">     </span><span class="nb">INT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">date_commande</span><span class="w"> </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span><span class="p">,</span>
+<span class="w">    </span><span class="n">statut</span><span class="w">        </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;validee&#39;</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">details_commande</span><span class="p">(</span>
+<span class="w">    </span><span class="n">detail_id</span><span class="w">     </span><span class="nb">SERIAL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">commande_id</span><span class="w">   </span><span class="nb">INT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">client_id</span><span class="w">     </span><span class="nb">INT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">produit_id</span><span class="w">    </span><span class="nb">INT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">quantite</span><span class="w">      </span><span class="nb">INT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="n">prix_unitaire</span><span class="w"> </span><span class="nb">DECIMAL</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span>
+<span class="p">);</span>
+</code></pre></div>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>details_commande</code> contient <code>client_id</code> pour permettre sa colocalisation avec <code>clients</code> et <code>commandes</code>.</p>
+</div>
+<h3 id="b-distribuer-les-tables">b. Distribuer les tables<a class="headerlink" href="#b-distribuer-les-tables" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="c1">-- Distribuer clients sur client_id</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">create_distributed_table</span><span class="p">(</span><span class="s1">&#39;clients&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;client_id&#39;</span><span class="p">);</span>
+
+<span class="c1">-- Répliquer produits sur tous les workers (table de référence)</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">create_reference_table</span><span class="p">(</span><span class="s1">&#39;produits&#39;</span><span class="p">);</span>
+
+<span class="c1">-- Distribuer commandes — même clé que clients → colocalisation automatique</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">create_distributed_table</span><span class="p">(</span><span class="s1">&#39;commandes&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;client_id&#39;</span><span class="p">);</span>
+
+<span class="c1">-- Distribuer details_commande — même clé → colocalisation complète</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">create_distributed_table</span><span class="p">(</span><span class="s1">&#39;details_commande&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;client_id&#39;</span><span class="p">);</span>
+</code></pre></div>
+
+<h3 id="c-verifier-la-distribution">c. Vérifier la distribution<a class="headerlink" href="#c-verifier-la-distribution" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="n">logicalrelid</span><span class="p">,</span><span class="w"> </span><span class="n">partmethod</span><span class="p">,</span><span class="w"> </span><span class="n">colocationid</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">pg_dist_partition</span><span class="p">;</span>
+</code></pre></div>
+
+<p>Résultat attendu — <code>clients</code>, <code>commandes</code> et <code>details_commande</code> ont le <strong>même</strong> <code>colocationid</code> :</p>
+<div class="codehilite"><pre><span></span><code>   logicalrelid   | partmethod | colocationid
+------------------+------------+--------------
+ clients          | h          |            1
+ produits         | n          |            2
+ commandes        | h          |            1
+ details_commande | h          |            1
+</code></pre></div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../" class="btn btn-neutral float-left" title="Introduction"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../data/" class="btn btn-neutral float-right" title="Chargement des données">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>© 2026 Cours Big Data - Tous droits réservés</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../data/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

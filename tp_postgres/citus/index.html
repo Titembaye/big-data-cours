@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Introduction - Cours Big Data</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../css/custom.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Introduction";
+        var mkdocs_page_input_path = "tp_postgres/citus/index.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Cours Big Data
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Accueil</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hadoop TP1</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/deployment/">Démarrage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/hdfs/">Explorer HDFS</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hadoop TP2</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp2/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp2/hdfs/">Phase 1 — HDFS</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp2/mapreduce/">Phase 2 — MapReduce</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp2/yarn/">Phase 3 — YARN</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">PostgreSQL</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../">Vue d'ensemble</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >Partie 1 — FDW Distribué</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../fdw_distribue/">Introduction</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" >Partie 2 — Citus</a>
+    <ul class="current">
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">Introduction</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#a-docker">A. Docker</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#quest-ce-quun-conteneur-docker">Qu'est-ce qu'un conteneur Docker ?</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#docker-compose">Docker Compose</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#larchitecture-des-conteneurs">L'architecture des conteneurs</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#b-concepts-citus">B. Concepts Citus</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#principe-de-fonctionnement">Principe de fonctionnement</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#types-de-tables-dans-citus">Types de tables dans Citus</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#la-colocalisation">La colocalisation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#etapes-du-tp">Étapes du TP</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="setup/">Setup cluster et tables</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="data/">Chargement des données</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="analyse/">Analyse et performances</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >Partie 3 — FDW Fédéré</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../fdw_federe/">Introduction</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Cours Big Data</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">PostgreSQL</li>
+          <li class="breadcrumb-item">Partie 2 — Citus</li>
+      <li class="breadcrumb-item active">Introduction</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="partie-2-distribution-reelle-avec-citus">Partie 2 — Distribution réelle avec Citus<a class="headerlink" href="#partie-2-distribution-reelle-avec-citus" title="Permanent link">&para;</a></h1>
+<h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h2>
+<p>Dans les parties précédentes, nous avons amélioré progressivement l'architecture de ShopFlow. Le partitionnement a réduit le périmètre de lecture en segmentant les tables localement. FDW a permis de déplacer physiquement des partitions sur des serveurs distants. Mais dans les deux cas, un point faible demeure : le serveur central supporte seul la charge de coordination et d'exécution des requêtes analytiques.</p>
+<p>Citus répond à cette limite. Il transforme PostgreSQL en une base de données véritablement distribuée, où les requêtes sont découpées et exécutées en parallèle sur plusieurs machines — les workers. Plus on ajoute de workers, plus la capacité de traitement augmente. C'est de la scalabilité horizontale.</p>
+<hr />
+<h2 id="a-docker">A. Docker<a class="headerlink" href="#a-docker" title="Permanent link">&para;</a></h2>
+<p>Pour la partie Citus, nous allons utiliser Docker.</p>
+<h3 id="quest-ce-quun-conteneur-docker">Qu'est-ce qu'un conteneur Docker ?<a class="headerlink" href="#quest-ce-quun-conteneur-docker" title="Permanent link">&para;</a></h3>
+<p>Un conteneur est une mini-machine isolée qui tourne à l'intérieur de votre machine. Il a son propre système de fichiers, ses propres processus, son propre réseau. Il est léger, reproductible, et s'arrête proprement sans laisser de traces sur votre système.</p>
+<p>Concrètement, au lieu d'installer Citus directement sur votre ordinateur, on va lancer des conteneurs qui contiennent déjà PostgreSQL + Citus préinstallés et préconfigurés.</p>
+<h3 id="docker-compose">Docker Compose<a class="headerlink" href="#docker-compose" title="Permanent link">&para;</a></h3>
+<p>Docker Compose permet de décrire et gérer plusieurs conteneurs en même temps à partir d'un seul fichier <code>docker-compose.yml</code>. Ce fichier permet de monter un cluster de 3 conteneurs en une seule commande.</p>
+<h3 id="larchitecture-des-conteneurs">L'architecture des conteneurs<a class="headerlink" href="#larchitecture-des-conteneurs" title="Permanent link">&para;</a></h3>
+<p>On simule un cluster Citus avec 3 conteneurs sur la même machine, chacun écoutant sur un port différent :</p>
+<ul>
+<li><code>citus_coordinateur</code> — port 5432 : reçoit toutes les requêtes SQL, orchestre le travail</li>
+<li><code>citus_worker1</code> — port 5433 : stocke et traite une partie des données</li>
+<li><code>citus_worker2</code> — port 5434 : stocke et traite l'autre partie des données</li>
+</ul>
+<p>Les trois conteneurs communiquent entre eux via un réseau interne Docker.</p>
+<p><img alt="Architecture Citus" src="../../assets/architecture_citus.png" /></p>
+<hr />
+<h2 id="b-concepts-citus">B. Concepts Citus<a class="headerlink" href="#b-concepts-citus" title="Permanent link">&para;</a></h2>
+<h3 id="principe-de-fonctionnement">Principe de fonctionnement<a class="headerlink" href="#principe-de-fonctionnement" title="Permanent link">&para;</a></h3>
+<p>Quand on déclare une table comme distribuée dans Citus, il la découpe en fragments appelés <strong>shards</strong>. Par défaut, Citus crée 32 shards par table et les répartit équitablement sur les workers disponibles.</p>
+<p>La <strong>clé de distribution</strong> détermine dans quel shard va chaque ligne. C'est le choix le plus important de toute la configuration.</p>
+<h3 id="types-de-tables-dans-citus">Types de tables dans Citus<a class="headerlink" href="#types-de-tables-dans-citus" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Table distribuée</strong></td>
+<td>Fragmentée sur les workers selon la clé</td>
+<td>Grandes tables (<code>clients</code>, <code>commandes</code>)</td>
+</tr>
+<tr>
+<td><strong>Table de référence</strong></td>
+<td>Répliquée intégralement sur tous les workers</td>
+<td>Petites tables peu modifiées (<code>produits</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="la-colocalisation">La colocalisation<a class="headerlink" href="#la-colocalisation" title="Permanent link">&para;</a></h3>
+<p>Quand deux tables distribuées ont la même clé de distribution, Citus place leurs shards correspondants sur le même worker. Une jointure entre ces deux tables s'exécute alors <strong>localement</strong> sur chaque worker, sans transfert réseau.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Dans notre TP, <code>clients</code>, <code>commandes</code> et <code>details_commande</code> seront toutes trois distribuées sur <code>client_id</code>. Un client, ses commandes et les détails de ces commandes seront toujours sur le même worker.</p>
+</div>
+<hr />
+<h2 id="etapes-du-tp">Étapes du TP<a class="headerlink" href="#etapes-du-tp" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Étape</th>
+<th>Contenu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="setup/">Setup</a></td>
+<td>Cluster Docker + création + distribution des tables</td>
+</tr>
+<tr>
+<td><a href="data/">Données</a></td>
+<td>Chargement des 5 millions de lignes</td>
+</tr>
+<tr>
+<td><a href="analyse/">Analyse</a></td>
+<td>Observer les shards et mesurer l'impact de la colocalisation</td>
+</tr>
+</tbody>
+</table>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../fdw_distribue/" class="btn btn-neutral float-left" title="Introduction"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="setup/" class="btn btn-neutral float-right" title="Setup cluster et tables">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>© 2026 Cours Big Data - Tous droits réservés</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../fdw_distribue/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="setup/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
