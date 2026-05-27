@@ -1,0 +1,35 @@
+services:
+
+  mysql_db:
+    image: mysql:8.0
+    container_name: mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: stock_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./data:/var/lib/mysql-files
+    networks:
+      - fdw_network
+
+  postgres_db:
+    build:
+      context: .
+      network: host
+    container_name: postgres_container
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: pg123
+      POSTGRES_DB: ecom_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./data:/data
+    networks:
+      - fdw_network
+
+networks:
+  fdw_network:
+    driver: bridge
