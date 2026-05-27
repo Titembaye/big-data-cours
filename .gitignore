@@ -1,2 +1,11 @@
 site/
 venv/
+__pycache__/
+*.pyc
+
+# Worktrees (dossiers de branches séparées)
+Hadoop-TP1/
+Hadoop-TP2/
+Tp_postgres/
+cours-docs/
+apache-spark/
