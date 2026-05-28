@@ -212,7 +212,9 @@ sudo docker-compose up -d
 
 ## 3.5 Tester la distribution réelle avec un grand fichier
 
-Avec un petit fichier, Hadoop crée un seul bloc et une seule tâche Map — le job ne se distribue pas vraiment. Pour observer la distribution, générer un fichier de 15 MB (découpé en 15 blocs de 1 MB) :
+### a. Générer le fichier
+
+Ouvrez un terminal sur **votre machine** (pas dans un conteneur) pour créer un fichier `test_file.txt` dans `/tmp/` de votre système local :
 
 ```bash
 python -c "
@@ -220,12 +222,16 @@ import random
 words = ['hadoop', 'hdfs', 'mapreduce', 'yarn', 'datanode', 'namenode', 'cluster', 'distribue', 'bloc', 'fichier']
 for i in range(100000):
     print(' '.join([random.choice(words) for _ in range(20)]))
-" > /tmp/grand_fichier.txt
+" > /tmp/test_file.txt
 ```
 
+### b. Lancer le job
+
+Les commandes suivantes s'exécutent **à l'intérieur du conteneur** `namenode`. Le fichier est d'abord transféré depuis `/tmp/` local vers HDFS, puis le job WordCount est lancé :
+
 ```bash
-hdfs dfs -put /tmp/grand_fichier.txt /user/tp/
-hadoop jar /opt/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.3.6.jar wordcount /user/tp/grand_fichier.txt /user/tp/output2
+hdfs dfs -put /tmp/test_file.txt /user/tp/
+hadoop jar /opt/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.3.6.jar wordcount /user/tp/test_file.txt /user/tp/output2
 ```
 
 Dans les compteurs du job :
@@ -246,16 +252,3 @@ Les 15 tâches Map sont distribuées sur les 2 NodeManagers et s'exécutent par 
 |-----------|-----|------|
 | HDFS NameNode | http://localhost:9870 | État du cluster HDFS, navigation dans les fichiers |
 | YARN ResourceManager | http://localhost:8088 | État du cluster YARN, suivi des jobs |
-
----
-
-## État du cluster à l'issue des phases 2 et 3
-
-```
-NameNode          — port 9870  — carte du système de fichiers HDFS
-ResourceManager   — port 8088  — allocation des ressources YARN
-DataNode1         — stockage des blocs HDFS
-DataNode2         — stockage des blocs HDFS
-NodeManager1      — exécution des tâches MapReduce
-NodeManager2      — exécution des tâches MapReduce
-```
