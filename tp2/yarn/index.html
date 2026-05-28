@@ -96,9 +96,9 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#32-mettre-a-jour-docker-composeyml">3.2 Mettre à jour docker-compose.yml</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#33-erreur-courante-nodemanager-ne-trouve-pas-le-resourcemanager">3.3 Erreur courante — NodeManager ne trouve pas le ResourceManager</a>
+    <li class="toctree-l2"><a class="reference internal" href="#33-verifier-le-cluster-yarn">3.3 Vérifier le cluster YARN</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#34-verifier-le-cluster-yarn">3.4 Vérifier le cluster YARN</a>
+    <li class="toctree-l2"><a class="reference internal" href="#34-mise-a-jour-de-hdfs-sitexml-taille-des-blocs">3.4 Mise à jour de hdfs-site.xml — taille des blocs</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#35-tester-la-distribution-reelle-avec-un-grand-fichier">3.5 Tester la distribution réelle avec un grand fichier</a>
     </li>
@@ -197,7 +197,7 @@
 </ul>
 <hr />
 <h2 id="32-mettre-a-jour-docker-composeyml">3.2 Mettre à jour docker-compose.yml<a class="headerlink" href="#32-mettre-a-jour-docker-composeyml" title="Permanent link">&para;</a></h2>
-<p>On ajoute le ResourceManager et deux NodeManagers. On garde 2 DataNodes et 2 NodeManagers pour rester dans les limites d'une machine avec 8 GB de RAM — au-delà, Docker utilise le swap et les jobs deviennent instables.</p>
+<p>On ajoute le ResourceManager et deux NodeManagers. On garde 2 DataNodes et 2 NodeManagers pour rester dans les limites d'une machine avec 8 GB de RAM.</p>
 <p>Les quatre fichiers de configuration doivent être montés dans tous les conteneurs.</p>
 <div class="codehilite"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">namenode</span><span class="p">:</span>
@@ -293,25 +293,33 @@ sudo<span class="w"> </span>docker<span class="w"> </span>ps
 
 <p>On doit voir 6 conteneurs actifs : namenode, resourcemanager, datanode1, datanode2, nodemanager1, nodemanager2.</p>
 <hr />
-<h2 id="33-erreur-courante-nodemanager-ne-trouve-pas-le-resourcemanager">3.3 Erreur courante — NodeManager ne trouve pas le ResourceManager<a class="headerlink" href="#33-erreur-courante-nodemanager-ne-trouve-pas-le-resourcemanager" title="Permanent link">&para;</a></h2>
-<p>Si les NodeManagers démarrent puis s'arrêtent avec :</p>
-<div class="codehilite"><pre><span></span><code><span class="nv">Your</span><span class="w"> </span><span class="nv">endpoint</span><span class="w"> </span><span class="nv">configuration</span><span class="w"> </span><span class="nv">is</span><span class="w"> </span><span class="nv">wrong</span><span class="c1">; UnsetHostnameOrPort</span>
-<span class="nv">Retrying</span><span class="w"> </span><span class="k">connect</span><span class="w"> </span><span class="nv">to</span><span class="w"> </span><span class="nv">server</span>:<span class="w"> </span><span class="mi">0</span>.<span class="mi">0</span>.<span class="mi">0</span>.<span class="mi">0</span><span class="o">/</span><span class="mi">0</span>.<span class="mi">0</span>.<span class="mi">0</span>.<span class="mi">0</span>:<span class="mi">8031</span>
-</code></pre></div>
-
-<p>Vérifier le chemin de montage dans <code>docker-compose.yml</code> :</p>
-<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker<span class="w"> </span>inspect<span class="w"> </span>nodemanager1<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>yarn-site
-</code></pre></div>
-
-<p>Le chemin de destination doit être exactement <code>/opt/hadoop/etc/hadoop/yarn-site.xml</code> et non <code>/opt/etc/hadoop/yarn-site.xml</code> — une faute de frappe courante.</p>
-<hr />
-<h2 id="34-verifier-le-cluster-yarn">3.4 Vérifier le cluster YARN<a class="headerlink" href="#34-verifier-le-cluster-yarn" title="Permanent link">&para;</a></h2>
+<h2 id="33-verifier-le-cluster-yarn">3.3 Vérifier le cluster YARN<a class="headerlink" href="#33-verifier-le-cluster-yarn" title="Permanent link">&para;</a></h2>
 <p>L'interface web YARN est accessible sur <code>http://localhost:8088</code> :</p>
 <ul>
 <li><code>Active Nodes</code> — nombre de NodeManagers connectés</li>
 <li><code>Total Resources</code> — capacité totale en mémoire et CPU</li>
 <li><code>Applications</code> — historique et état des jobs soumis</li>
 </ul>
+<hr />
+<h2 id="34-mise-a-jour-de-hdfs-sitexml-taille-des-blocs">3.4 Mise à jour de hdfs-site.xml — taille des blocs<a class="headerlink" href="#34-mise-a-jour-de-hdfs-sitexml-taille-des-blocs" title="Permanent link">&para;</a></h2>
+<p>Avant de tester la distribution, il faut modifier <code>conf/hdfs-site.xml</code> pour réduire la taille des blocs HDFS.</p>
+<p>En production, la valeur par défaut est <strong>128 MB</strong> par bloc. Avec cette valeur, il faudrait un fichier de plus de 1,9 GB pour observer une vraie distribution en 15 blocs.</p>
+<p>Pour observer la distribution, on la ramène à <strong>1 MB</strong> pour pouvoir travailler avec des fichiers légers :</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">&lt;property&gt;</span>
+<span class="w">    </span><span class="nt">&lt;name&gt;</span>dfs.blocksize<span class="nt">&lt;/name&gt;</span>
+<span class="w">    </span><span class="nt">&lt;value&gt;</span>1048576<span class="nt">&lt;/value&gt;</span><span class="w">  </span><span class="cm">&lt;!-- 1 MB = 1024 × 1024 octets (défaut prod : 134217728 = 128 MB) --&gt;</span>
+<span class="nt">&lt;/property&gt;</span>
+</code></pre></div>
+
+<p>Après cette modification, relancer le cluster :</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker-compose<span class="w"> </span>down
+sudo<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+</code></pre></div>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Ce choix est purement pédagogique. L'objectif est de voir Hadoop découper un fichier en plusieurs blocs et distribuer les tâches Map sur les NodeManagers. Avec des blocs de 1 MB, un fichier de 15 MB suffit pour générer 15 blocs et 15 tâches Map parallèles.</p>
+</div>
 <hr />
 <h2 id="35-tester-la-distribution-reelle-avec-un-grand-fichier">3.5 Tester la distribution réelle avec un grand fichier<a class="headerlink" href="#35-tester-la-distribution-reelle-avec-un-grand-fichier" title="Permanent link">&para;</a></h2>
 <p>Avec un petit fichier, Hadoop crée un seul bloc et une seule tâche Map — le job ne se distribue pas vraiment. Pour observer la distribution, générer un fichier de 15 MB (découpé en 15 blocs de 1 MB) :</p>
