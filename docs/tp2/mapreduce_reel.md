@@ -40,18 +40,81 @@ hdfs dfs -ls /user/tp/transactions/
 
 ---
 
-## 4.3 Copier les scripts dans le conteneur
+## 4.3 Créer les scripts
 
-Les scripts doivent être accessibles depuis le namenode au moment du lancement du job. Depuis votre machine :
+Dans le dossier `scripts/`, créer deux fichiers.
+
+**`scripts/mapper.py`** — lit le CSV ligne par ligne et émet une paire `(produit, montant)` pour chaque transaction :
+
+```python
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import sys
+
+for ligne in sys.stdin:
+    ligne = ligne.strip()
+
+    # Ignorer l'en-tête
+    if ligne.startswith('transaction_id'):
+        continue
+
+    champs = ligne.split(',')
+
+    if len(champs) != 5:
+        continue
+
+    produit = champs[1]
+    montant = champs[3]
+
+    print('{}\t{}'.format(produit, montant))
+```
+
+**`scripts/reducer.py`** — reçoit les paires triées par clé et additionne les montants par produit :
+
+```python
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import sys
+
+produit_courant = None
+total = 0
+
+for ligne in sys.stdin:
+    ligne = ligne.strip()
+    champs = ligne.split('\t')
+
+    if len(champs) != 2:
+        continue
+
+    produit = champs[0]
+
+    try:
+        montant = float(champs[1])
+    except ValueError:
+        continue
+
+    # Nouveau produit — afficher le résultat du précédent
+    if produit_courant and produit != produit_courant:
+        print('{}\t{:.2f}'.format(produit_courant, total))
+        total = 0
+
+    produit_courant = produit
+    total += montant
+
+# Dernier produit
+if produit_courant:
+    print('{}\t{:.2f}'.format(produit_courant, total))
+```
+
+Une fois les fichiers créés, les copier dans le conteneur et les rendre exécutables :
 
 ```bash
 sudo docker cp scripts/mapper.py namenode:/tmp/
 sudo docker cp scripts/reducer.py namenode:/tmp/
 ```
 
-Rendre les scripts exécutables (depuis le conteneur) :
-
 ```bash
+sudo docker exec -it namenode bash
 chmod +x /tmp/mapper.py /tmp/reducer.py
 ```
 
