@@ -10,7 +10,7 @@ L'objectif : calculer le chiffre d'affaires total par produit à partir de 500 0
 
 Télécharger le fichier de transactions et le placer dans le dossier `data/` du projet :
 
-> **[Télécharger transactions.csv](#)** ← lien à mettre à jour
+> **[Télécharger transactions.csv](https://drive.google.com/file/d/1TE-vGFsSrXRposB7YDpz8g9lzoeKh_zz/view?usp=sharing)**
 
 Le fichier contient 500 000 lignes au format :
 
