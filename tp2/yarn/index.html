@@ -101,10 +101,14 @@
     <li class="toctree-l2"><a class="reference internal" href="#34-mise-a-jour-de-hdfs-sitexml-taille-des-blocs">3.4 Mise à jour de hdfs-site.xml — taille des blocs</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#35-tester-la-distribution-reelle-avec-un-grand-fichier">3.5 Tester la distribution réelle avec un grand fichier</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#a-generer-le-fichier">a. Générer le fichier</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#b-lancer-le-job">b. Lancer le job</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#36-interfaces-web-disponibles">3.6 Interfaces web disponibles</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#etat-du-cluster-a-lissue-des-phases-2-et-3">État du cluster à l'issue des phases 2 et 3</a>
     </li>
     </ul>
                   </li>
@@ -322,17 +326,20 @@ sudo<span class="w"> </span>docker-compose<span class="w"> </span>up<span class=
 </div>
 <hr />
 <h2 id="35-tester-la-distribution-reelle-avec-un-grand-fichier">3.5 Tester la distribution réelle avec un grand fichier<a class="headerlink" href="#35-tester-la-distribution-reelle-avec-un-grand-fichier" title="Permanent link">&para;</a></h2>
-<p>Avec un petit fichier, Hadoop crée un seul bloc et une seule tâche Map — le job ne se distribue pas vraiment. Pour observer la distribution, générer un fichier de 15 MB (découpé en 15 blocs de 1 MB) :</p>
+<h3 id="a-generer-le-fichier">a. Générer le fichier<a class="headerlink" href="#a-generer-le-fichier" title="Permanent link">&para;</a></h3>
+<p>Ouvrez un terminal sur <strong>votre machine</strong> (pas dans un conteneur) pour créer un fichier <code>test_file.txt</code> dans <code>/tmp/</code> de votre système local :</p>
 <div class="codehilite"><pre><span></span><code>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;</span>
 <span class="s2">import random</span>
 <span class="s2">words = [&#39;hadoop&#39;, &#39;hdfs&#39;, &#39;mapreduce&#39;, &#39;yarn&#39;, &#39;datanode&#39;, &#39;namenode&#39;, &#39;cluster&#39;, &#39;distribue&#39;, &#39;bloc&#39;, &#39;fichier&#39;]</span>
 <span class="s2">for i in range(100000):</span>
 <span class="s2">    print(&#39; &#39;.join([random.choice(words) for _ in range(20)]))</span>
-<span class="s2">&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>/tmp/grand_fichier.txt
+<span class="s2">&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>/tmp/test_file.txt
 </code></pre></div>
 
-<div class="codehilite"><pre><span></span><code>hdfs<span class="w"> </span>dfs<span class="w"> </span>-put<span class="w"> </span>/tmp/grand_fichier.txt<span class="w"> </span>/user/tp/
-hadoop<span class="w"> </span>jar<span class="w"> </span>/opt/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.3.6.jar<span class="w"> </span>wordcount<span class="w"> </span>/user/tp/grand_fichier.txt<span class="w"> </span>/user/tp/output2
+<h3 id="b-lancer-le-job">b. Lancer le job<a class="headerlink" href="#b-lancer-le-job" title="Permanent link">&para;</a></h3>
+<p>Les commandes suivantes s'exécutent <strong>à l'intérieur du conteneur</strong> <code>namenode</code>. Le fichier est d'abord transféré depuis <code>/tmp/</code> local vers HDFS, puis le job WordCount est lancé :</p>
+<div class="codehilite"><pre><span></span><code>hdfs<span class="w"> </span>dfs<span class="w"> </span>-put<span class="w"> </span>/tmp/test_file.txt<span class="w"> </span>/user/tp/
+hadoop<span class="w"> </span>jar<span class="w"> </span>/opt/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.3.6.jar<span class="w"> </span>wordcount<span class="w"> </span>/user/tp/test_file.txt<span class="w"> </span>/user/tp/output2
 </code></pre></div>
 
 <p>Dans les compteurs du job :</p>
@@ -365,15 +372,6 @@ Running job: job_1775780999512_0001   (plus de &quot;local&quot; dans l&#39;iden
 </tr>
 </tbody>
 </table>
-<hr />
-<h2 id="etat-du-cluster-a-lissue-des-phases-2-et-3">État du cluster à l'issue des phases 2 et 3<a class="headerlink" href="#etat-du-cluster-a-lissue-des-phases-2-et-3" title="Permanent link">&para;</a></h2>
-<div class="codehilite"><pre><span></span><code>NameNode          — port 9870  — carte du système de fichiers HDFS
-ResourceManager   — port 8088  — allocation des ressources YARN
-DataNode1         — stockage des blocs HDFS
-DataNode2         — stockage des blocs HDFS
-NodeManager1      — exécution des tâches MapReduce
-NodeManager2      — exécution des tâches MapReduce
-</code></pre></div>
               
             </div>
           </div><footer>
