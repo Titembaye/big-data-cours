@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Phase 5 — Hive - Cours Big Data</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../css/custom.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Phase 5 \u2014 Hive";
+        var mkdocs_page_input_path = "tp2/hive.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Cours Big Data
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Accueil</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">PostgreSQL</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp_postgres/">Vue d'ensemble</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >Partie 1 — FDW Distribué</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../tp_postgres/fdw_distribue/">Introduction</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >Partie 2 — Citus</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../tp_postgres/citus/">Introduction</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../tp_postgres/citus/setup/">Setup cluster et tables</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../tp_postgres/citus/data/">Chargement des données</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../tp_postgres/citus/analyse/">Analyse et performances</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >Partie 3 — FDW Fédéré</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../tp_postgres/fdw_federe/">Introduction</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hadoop TP1</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/deployment/">Démarrage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tp1/hdfs/">Explorer HDFS</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Hadoop TP2</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../hdfs/">Phase 1 — HDFS</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mapreduce/">Phase 2 — MapReduce</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../yarn/">Phase 3 — YARN</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mapreduce_reel/">Phase 4 — MapReduce réel</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Phase 5 — Hive</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#51-telecharger-le-driver-postgresql">5.1 Télécharger le driver PostgreSQL</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#52-mettre-a-jour-docker-composeyml">5.2 Mettre à jour docker-compose.yml</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#53-preparer-le-repertoire-hdfs-pour-hive">5.3 Préparer le répertoire HDFS pour Hive</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#54-demarrer-les-nouveaux-services">5.4 Démarrer les nouveaux services</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#55-se-connecter-a-hive-via-beeline">5.5 Se connecter à Hive via beeline</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#56-creer-une-table-et-interroger-les-transactions">5.6 Créer une table et interroger les transactions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#57-interfaces-web-disponibles">5.7 Interfaces web disponibles</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#problemes-courants">Problèmes courants</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Cours Big Data</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Hadoop TP2</li>
+      <li class="breadcrumb-item active">Phase 5 — Hive</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="phase-5-hive">Phase 5 — Hive<a class="headerlink" href="#phase-5-hive" title="Permanent link">&para;</a></h1>
+<p>Hive permet d'interroger des données stockées dans HDFS avec du SQL standard. Sous le capot, chaque requête est traduite en un ou plusieurs jobs MapReduce.</p>
+<p>L'architecture repose sur trois composants supplémentaires :</p>
+<div class="codehilite"><pre><span></span><code><span class="nx">Toi</span><span class="w"> </span><span class="p">(</span><span class="nx">beeline</span><span class="p">)</span>
+<span class="w">      </span><span class="o">|</span>
+<span class="w">      </span><span class="nx">v</span>
+<span class="w"> </span><span class="nx">HiveServer2</span><span class="w">     </span><span class="err">←</span><span class="w"> </span><span class="nx">reçoit</span><span class="w"> </span><span class="nx">les</span><span class="w"> </span><span class="nx">requêtes</span><span class="w"> </span><span class="nx">SQL</span><span class="w"> </span><span class="p">(</span><span class="nx">port</span><span class="w"> </span><span class="mi">10000</span><span class="p">)</span>
+<span class="w">      </span><span class="o">|</span>
+<span class="w">      </span><span class="nx">v</span>
+<span class="w">  </span><span class="nx">Metastore</span><span class="w">      </span><span class="err">←</span><span class="w"> </span><span class="nx">stocke</span><span class="w"> </span><span class="nx">les</span><span class="w"> </span><span class="nx">métadonnées</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nx">tables</span><span class="p">,</span><span class="w"> </span><span class="nx">colonnes</span><span class="p">,</span><span class="w"> </span><span class="nx">types</span><span class="w"> </span><span class="p">(</span><span class="nx">port</span><span class="w"> </span><span class="mi">9083</span><span class="p">)</span>
+<span class="w">      </span><span class="o">|</span>
+<span class="w">      </span><span class="nx">v</span>
+<span class="w"> </span><span class="nx">PostgreSQL</span><span class="w">      </span><span class="err">←</span><span class="w"> </span><span class="kd">base</span><span class="w"> </span><span class="nx">de</span><span class="w"> </span><span class="nx">données</span><span class="w"> </span><span class="nx">du</span><span class="w"> </span><span class="nx">metastore</span>
+<span class="w">      </span><span class="o">+</span>
+<span class="w">   </span><span class="nx">HDFS</span><span class="w">          </span><span class="err">←</span><span class="w"> </span><span class="nx">là</span><span class="w"> </span><span class="nx">où</span><span class="w"> </span><span class="nx">les</span><span class="w"> </span><span class="nx">données</span><span class="w"> </span><span class="nx">sont</span><span class="w"> </span><span class="nx">réellement</span><span class="w"> </span><span class="nx">stockées</span>
+</code></pre></div>
+
+<hr />
+<h2 id="51-telecharger-le-driver-postgresql">5.1 Télécharger le driver PostgreSQL<a class="headerlink" href="#51-telecharger-le-driver-postgresql" title="Permanent link">&para;</a></h2>
+<p>Le metastore se connecte à PostgreSQL via JDBC. L'image Hive n'inclut pas ce driver — il faut le télécharger manuellement dans <code>drivers/</code> :</p>
+<div class="codehilite"><pre><span></span><code>mkdir<span class="w"> </span>-p<span class="w"> </span>drivers
+wget<span class="w"> </span>-O<span class="w"> </span>drivers/postgresql.jar<span class="w"> </span>https://jdbc.postgresql.org/download/postgresql-42.7.3.jar
+</code></pre></div>
+
+<hr />
+<h2 id="52-mettre-a-jour-docker-composeyml">5.2 Mettre à jour docker-compose.yml<a class="headerlink" href="#52-mettre-a-jour-docker-composeyml" title="Permanent link">&para;</a></h2>
+<p>Ajouter les trois nouveaux services à la suite des services existants :</p>
+<div class="codehilite"><pre><span></span><code><span class="w">  </span><span class="nt">postgres</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres:15</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_DB=metastore</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_USER=hive</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">POSTGRES_PASSWORD=hive123</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/postgres:/var/lib/postgresql/data</span>
+<span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD-SHELL&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;pg_isready</span><span class="nv"> </span><span class="s">-U</span><span class="nv"> </span><span class="s">hive</span><span class="nv"> </span><span class="s">-d</span><span class="nv"> </span><span class="s">metastore&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
+<span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5s</span>
+<span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">      </span><span class="nt">start_period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+
+<span class="w">  </span><span class="nt">metastore</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apache/hive:4.0.0</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metastore</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">postgres</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_healthy</span>
+<span class="w">      </span><span class="nt">namenode</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_started</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SERVICE_NAME=metastore</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DB_DRIVER=postgres</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SERVICE_OPTS=-Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=hive123</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hive-site.xml:/opt/hive/conf/hive-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./drivers/postgresql.jar:/opt/hive/lib/postgresql.jar</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;9083:9083&quot;</span>
+<span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;bash&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-c&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;echo</span><span class="nv"> </span><span class="s">&gt;</span><span class="nv"> </span><span class="s">/dev/tcp/localhost/9083&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15s</span>
+<span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
+<span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">      </span><span class="nt">start_period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60s</span>
+
+<span class="w">  </span><span class="nt">hiveserver2</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apache/hive:4.0.0</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hiveserver2</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">metastore</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_healthy</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SERVICE_NAME=hiveserver2</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">IS_RESUME=true</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SERVICE_OPTS=-Dhive.metastore.uris=thrift://metastore:9083</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./conf/hive-site.xml:/opt/hive/conf/hive-site.xml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./drivers/postgresql.jar:/opt/hive/lib/postgresql.jar</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;10000:10000&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;10002:10002&quot;</span>
+</code></pre></div>
+
+<p>Le <code>healthcheck</code> sur postgres et metastore est important : sans lui, le metastore essaie de se connecter à PostgreSQL avant qu'il soit prêt et échoue au démarrage.</p>
+<hr />
+<h2 id="53-preparer-le-repertoire-hdfs-pour-hive">5.3 Préparer le répertoire HDFS pour Hive<a class="headerlink" href="#53-preparer-le-repertoire-hdfs-pour-hive" title="Permanent link">&para;</a></h2>
+<p>Hive stocke les données des tables dans <code>/user/hive/warehouse</code> sur HDFS. Créer ce répertoire depuis le namenode :</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>namenode<span class="w"> </span>bash
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-mkdir<span class="w"> </span>-p<span class="w"> </span>/user/hive/warehouse
+hdfs<span class="w"> </span>dfs<span class="w"> </span>-chmod<span class="w"> </span><span class="m">777</span><span class="w"> </span>/user/hive/warehouse
+</code></pre></div>
+
+<hr />
+<h2 id="54-demarrer-les-nouveaux-services">5.4 Démarrer les nouveaux services<a class="headerlink" href="#54-demarrer-les-nouveaux-services" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>postgres<span class="w"> </span>metastore<span class="w"> </span>hiveserver2
+sudo<span class="w"> </span>docker<span class="w"> </span>ps
+</code></pre></div>
+
+<p>Le démarrage prend environ 1 à 2 minutes — le metastore initialise le schéma PostgreSQL au premier lancement. Attendre que les 9 conteneurs soient tous en état <code>Up</code>.</p>
+<hr />
+<h2 id="55-se-connecter-a-hive-via-beeline">5.5 Se connecter à Hive via beeline<a class="headerlink" href="#55-se-connecter-a-hive-via-beeline" title="Permanent link">&para;</a></h2>
+<p>Beeline est le client SQL de Hive, inclus dans le conteneur hiveserver2 :</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>hiveserver2<span class="w"> </span>beeline<span class="w"> </span>-u<span class="w"> </span><span class="s2">&quot;jdbc:hive2://localhost:10000&quot;</span>
+</code></pre></div>
+
+<p>Vérifier que la connexion fonctionne :</p>
+<div class="codehilite"><pre><span></span><code><span class="k">SHOW</span><span class="w"> </span><span class="n">DATABASES</span><span class="p">;</span>
+</code></pre></div>
+
+<hr />
+<h2 id="56-creer-une-table-et-interroger-les-transactions">5.6 Créer une table et interroger les transactions<a class="headerlink" href="#56-creer-une-table-et-interroger-les-transactions" title="Permanent link">&para;</a></h2>
+<p>Créer une base et une table externe pointant vers les données déjà dans HDFS :</p>
+<div class="codehilite"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">DATABASE</span><span class="w"> </span><span class="n">tp</span><span class="p">;</span>
+<span class="n">USE</span><span class="w"> </span><span class="n">tp</span><span class="p">;</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">EXTERNAL</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">transactions</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">transaction_id</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">produit</span><span class="w">        </span><span class="n">STRING</span><span class="p">,</span>
+<span class="w">    </span><span class="n">region</span><span class="w">         </span><span class="n">STRING</span><span class="p">,</span>
+<span class="w">    </span><span class="n">montant</span><span class="w">        </span><span class="n">DOUBLE</span><span class="p">,</span>
+<span class="w">    </span><span class="n">date_tr</span><span class="w">        </span><span class="n">STRING</span>
+<span class="p">)</span>
+<span class="k">ROW</span><span class="w"> </span><span class="n">FORMAT</span><span class="w"> </span><span class="n">DELIMITED</span>
+<span class="n">FIELDS</span><span class="w"> </span><span class="n">TERMINATED</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="s1">&#39;,&#39;</span>
+<span class="n">STORED</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">TEXTFILE</span>
+<span class="k">LOCATION</span><span class="w"> </span><span class="s1">&#39;/user/tp/transactions/&#39;</span>
+<span class="n">TBLPROPERTIES</span><span class="w"> </span><span class="p">(</span><span class="ss">&quot;skip.header.line.count&quot;</span><span class="o">=</span><span class="ss">&quot;1&quot;</span><span class="p">);</span>
+</code></pre></div>
+
+<p>Vérifier le chargement :</p>
+<div class="codehilite"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="k">count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">transactions</span><span class="p">;</span>
+</code></pre></div>
+
+<p>Calculer le chiffre d'affaires par produit :</p>
+<div class="codehilite"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="n">produit</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="k">SUM</span><span class="p">(</span><span class="n">montant</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">chiffre_affaires</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">transactions</span>
+<span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">produit</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">chiffre_affaires</span><span class="w"> </span><span class="k">DESC</span><span class="p">;</span>
+</code></pre></div>
+
+<p>Chiffre d'affaires par région :</p>
+<div class="codehilite"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="n">region</span><span class="p">,</span><span class="w"> </span><span class="n">ROUND</span><span class="p">(</span><span class="k">SUM</span><span class="p">(</span><span class="n">montant</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">chiffre_affaires</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">transactions</span>
+<span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">region</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">chiffre_affaires</span><span class="w"> </span><span class="k">DESC</span><span class="p">;</span>
+</code></pre></div>
+
+<p>Pour quitter beeline :</p>
+<div class="codehilite"><pre><span></span><code><span class="o">!</span><span class="n">quit</span>
+</code></pre></div>
+
+<hr />
+<h2 id="57-interfaces-web-disponibles">5.7 Interfaces web disponibles<a class="headerlink" href="#57-interfaces-web-disponibles" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>URL</th>
+<th>Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HiveServer2</td>
+<td>http://localhost:10002</td>
+<td>Suivi des requêtes en cours</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="problemes-courants">Problèmes courants<a class="headerlink" href="#problemes-courants" title="Permanent link">&para;</a></h2>
+<p>Voir <a href="https://github.com/Titembaye/big-data-cours/blob/hadoop-tp2/HIVE_TROUBLESHOOTING.md">HIVE_TROUBLESHOOTING.md</a> pour les erreurs rencontrées lors de la mise en place (driver JDBC, timing PostgreSQL, boucle HiveServer2).</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../mapreduce_reel/" class="btn btn-neutral float-left" title="Phase 4 — MapReduce réel"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>© 2026 Cours Big Data - Tous droits réservés</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../mapreduce_reel/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
