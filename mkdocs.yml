@@ -22,6 +22,8 @@ nav:
     - "Phase 1 — HDFS": tp2/hdfs.md
     - "Phase 2 — MapReduce": tp2/mapreduce.md
     - "Phase 3 — YARN": tp2/yarn.md
+    - "Phase 4 — MapReduce réel": tp2/mapreduce_reel.md
+    - "Phase 5 — Hive": tp2/hive.md
 markdown_extensions:
   - admonition
   - codehilite
