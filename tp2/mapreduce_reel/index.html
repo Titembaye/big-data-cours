@@ -98,7 +98,7 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#42-charger-dans-hdfs-terminal-namenode">4.2 Charger dans HDFS — terminal namenode</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#43-copier-les-scripts-dans-le-conteneur">4.3 Copier les scripts dans le conteneur</a>
+    <li class="toctree-l2"><a class="reference internal" href="#43-creer-les-scripts">4.3 Créer les scripts</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#44-lancer-le-job-avec-hadoop-streaming">4.4 Lancer le job avec Hadoop Streaming</a>
     </li>
@@ -162,14 +162,73 @@ hdfs<span class="w"> </span>dfs<span class="w"> </span>-ls<span class="w"> </spa
 </code></pre></div>
 
 <hr />
-<h2 id="43-copier-les-scripts-dans-le-conteneur">4.3 Copier les scripts dans le conteneur<a class="headerlink" href="#43-copier-les-scripts-dans-le-conteneur" title="Permanent link">&para;</a></h2>
-<p>Les scripts doivent être accessibles depuis le namenode au moment du lancement du job. Depuis votre machine :</p>
+<h2 id="43-creer-les-scripts">4.3 Créer les scripts<a class="headerlink" href="#43-creer-les-scripts" title="Permanent link">&para;</a></h2>
+<p>Dans le dossier <code>scripts/</code>, créer deux fichiers.</p>
+<p><strong><code>scripts/mapper.py</code></strong> — lit le CSV ligne par ligne et émet une paire <code>(produit, montant)</code> pour chaque transaction :</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="k">for</span> <span class="n">ligne</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="p">:</span>
+    <span class="n">ligne</span> <span class="o">=</span> <span class="n">ligne</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="c1"># Ignorer l&#39;en-tête</span>
+    <span class="k">if</span> <span class="n">ligne</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;transaction_id&#39;</span><span class="p">):</span>
+        <span class="k">continue</span>
+
+    <span class="n">champs</span> <span class="o">=</span> <span class="n">ligne</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">champs</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="k">continue</span>
+
+    <span class="n">produit</span> <span class="o">=</span> <span class="n">champs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">montant</span> <span class="o">=</span> <span class="n">champs</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\t</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">produit</span><span class="p">,</span> <span class="n">montant</span><span class="p">))</span>
+</code></pre></div>
+
+<p><strong><code>scripts/reducer.py</code></strong> — reçoit les paires triées par clé et additionne les montants par produit :</p>
+<div class="codehilite"><pre><span></span><code><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="n">produit_courant</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">for</span> <span class="n">ligne</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="p">:</span>
+    <span class="n">ligne</span> <span class="o">=</span> <span class="n">ligne</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">champs</span> <span class="o">=</span> <span class="n">ligne</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">champs</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">continue</span>
+
+    <span class="n">produit</span> <span class="o">=</span> <span class="n">champs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">montant</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">champs</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">continue</span>
+
+    <span class="c1"># Nouveau produit — afficher le résultat du précédent</span>
+    <span class="k">if</span> <span class="n">produit_courant</span> <span class="ow">and</span> <span class="n">produit</span> <span class="o">!=</span> <span class="n">produit_courant</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\t</span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">produit_courant</span><span class="p">,</span> <span class="n">total</span><span class="p">))</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">produit_courant</span> <span class="o">=</span> <span class="n">produit</span>
+    <span class="n">total</span> <span class="o">+=</span> <span class="n">montant</span>
+
+<span class="c1"># Dernier produit</span>
+<span class="k">if</span> <span class="n">produit_courant</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\t</span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">produit_courant</span><span class="p">,</span> <span class="n">total</span><span class="p">))</span>
+</code></pre></div>
+
+<p>Une fois les fichiers créés, les copier dans le conteneur et les rendre exécutables :</p>
 <div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker<span class="w"> </span>cp<span class="w"> </span>scripts/mapper.py<span class="w"> </span>namenode:/tmp/
 sudo<span class="w"> </span>docker<span class="w"> </span>cp<span class="w"> </span>scripts/reducer.py<span class="w"> </span>namenode:/tmp/
 </code></pre></div>
 
-<p>Rendre les scripts exécutables (depuis le conteneur) :</p>
-<div class="codehilite"><pre><span></span><code>chmod<span class="w"> </span>+x<span class="w"> </span>/tmp/mapper.py<span class="w"> </span>/tmp/reducer.py
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>namenode<span class="w"> </span>bash
+chmod<span class="w"> </span>+x<span class="w"> </span>/tmp/mapper.py<span class="w"> </span>/tmp/reducer.py
 </code></pre></div>
 
 <hr />
