@@ -69,7 +69,7 @@ Créer `conf/yarn-site.xml` :
 
 ## 3.2 Mettre à jour docker-compose.yml
 
-On ajoute le ResourceManager et deux NodeManagers. On garde 2 DataNodes et 2 NodeManagers pour rester dans les limites d'une machine avec 8 GB de RAM — au-delà, Docker utilise le swap et les jobs deviennent instables.
+On ajoute le ResourceManager et deux NodeManagers. On garde 2 DataNodes et 2 NodeManagers pour rester dans les limites d'une machine avec 8 GB de RAM.
 
 Les quatre fichiers de configuration doivent être montés dans tous les conteneurs.
 
@@ -172,32 +172,41 @@ On doit voir 6 conteneurs actifs : namenode, resourcemanager, datanode1, datanod
 
 ---
 
-## 3.3 Erreur courante — NodeManager ne trouve pas le ResourceManager
 
-Si les NodeManagers démarrent puis s'arrêtent avec :
-
-```
-Your endpoint configuration is wrong; UnsetHostnameOrPort
-Retrying connect to server: 0.0.0.0/0.0.0.0:8031
-```
-
-Vérifier le chemin de montage dans `docker-compose.yml` :
-
-```bash
-sudo docker inspect nodemanager1 | grep yarn-site
-```
-
-Le chemin de destination doit être exactement `/opt/hadoop/etc/hadoop/yarn-site.xml` et non `/opt/etc/hadoop/yarn-site.xml` — une faute de frappe courante.
-
----
-
-## 3.4 Vérifier le cluster YARN
+## 3.3 Vérifier le cluster YARN
 
 L'interface web YARN est accessible sur `http://localhost:8088` :
 
 - `Active Nodes` — nombre de NodeManagers connectés
 - `Total Resources` — capacité totale en mémoire et CPU
 - `Applications` — historique et état des jobs soumis
+
+---
+
+## 3.4 Mise à jour de hdfs-site.xml — taille des blocs
+
+Avant de tester la distribution, il faut modifier `conf/hdfs-site.xml` pour réduire la taille des blocs HDFS.
+
+En production, la valeur par défaut est **128 MB** par bloc. Avec cette valeur, il faudrait un fichier de plus de 1,9 GB pour observer une vraie distribution en 15 blocs.
+
+Pour observer la distribution, on la ramène à **1 MB** pour pouvoir travailler avec des fichiers légers :
+
+```xml
+<property>
+    <name>dfs.blocksize</name>
+    <value>1048576</value>  <!-- 1 MB = 1024 × 1024 octets (défaut prod : 134217728 = 128 MB) -->
+</property>
+```
+
+Après cette modification, relancer le cluster :
+
+```bash
+sudo docker-compose down
+sudo docker-compose up -d
+```
+
+!!! note
+    Ce choix est purement pédagogique. L'objectif est de voir Hadoop découper un fichier en plusieurs blocs et distribuer les tâches Map sur les NodeManagers. Avec des blocs de 1 MB, un fichier de 15 MB suffit pour générer 15 blocs et 15 tâches Map parallèles.
 
 ---
 
